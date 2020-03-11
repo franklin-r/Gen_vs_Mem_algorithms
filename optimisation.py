@@ -15,7 +15,7 @@ import utility as ut
 
 import CNN
 
-
+'''
 # Grid search optimisation for optimal number of layer, number of feature maps, 
 # learning rate and momentum
 def grid_search(dataset, NL_set, NF_set, lr_set, momentum_set) :
@@ -51,4 +51,51 @@ def grid_search(dataset, NL_set, NF_set, lr_set, momentum_set) :
             # end for lr
         # end for NF
     # end for NL
+'''    
+    
+    
+    
+    
+    
+'''    
+def gen_algo(popul, gen_max) :
+    
+    for gen in range(0, gen_max) :
+        # Evaluation of current population
+        for model in popul.pop :
+            model.evaluate_model()
+'''            
+        
+        # Selection of individuals (best and random not best). Place them in a new population P_next
+        
+        # Crossover. Randomly select individuals in P_next. Place offspring in P_child
+        
+        # Mutation of individuals in P_child
+        
+        # Update of current population. Current population is the union of P_next and P_child
+        
+    # return pop
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
                     

@@ -17,8 +17,6 @@ import torch.optim as optim
 import numpy as np
 from random import choice, randint
 from time import perf_counter
-import utility as ut
-
 
 
 # Define the CNN
@@ -359,9 +357,6 @@ class CNN(nn.Module) :
         optimizer = optim.SGD(self.parameters(), 
                               lr=self.chromosome["lr"], 
                               momentum=self.chromosome["momentum"])
-        
-        # Load the data for the training phase
-        train_loader, test_loader = ut.load_data(self.dataset, train_batch_size, test_batch_size)
         
         # Evaluation of the individual
         log_interval = 100

@@ -9,8 +9,9 @@ Created on Sat Mar  7 14:07:00 2020
 @Updated		:  
     
 """
-# Ajouter le temps d'éxecution
 
+
+'''
 import torch
 from torchvision import datasets, transforms
 
@@ -73,6 +74,6 @@ def load_data(dataset, train_batch_size=64, test_batch_size=1000) :
         raise ValueError("Invalid dataset name. Either choose 'MNIST' or 'CIFAR10'")
             
     return (train_loader, test_loader)
-
+'''
 
 
