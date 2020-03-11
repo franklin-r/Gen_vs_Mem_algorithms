@@ -47,7 +47,6 @@ class Population() :
         \Outputs : None
         """
         
-        print("debug")
         self.dataset = dataset      # Dataset
         self.size = size            # Size of the population
         
@@ -72,7 +71,7 @@ class Population() :
                             NL=choice(self.NL_set),
                             NF=choice(self.NF_set),
                             lr=choice(self.lr_set),
-                            mom=choice(self.mom_set)))
+                            mom=choice(self.mom_set)).cuda())
     # end __init__()        
             
         

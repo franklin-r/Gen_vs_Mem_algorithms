@@ -14,7 +14,6 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
-import numpy as np
 from random import choice, randint
 from time import perf_counter
 
@@ -116,9 +115,6 @@ class CNN(nn.Module) :
             # (We cannot have 3, 2 or 1 layer(s) left with the preceding cases)
             else :
                 conv_block_size = choice([2, 3, 4])
-        
-            #feat_maps = feat_maps_subseq[self.NL - NL] if (self.NL - NL) < len(feat_maps_subseq) \
-                                                        #else feat_maps_subseq[len(feat_maps_subseq) - 1]
                  
             # Select the feature maps size
             feat_maps = feat_maps_seq[ind_feat_maps] if ind_feat_maps < len(feat_maps_seq) \
@@ -258,6 +254,11 @@ class CNN(nn.Module) :
     
         # Iterate over batches of data
         for batch, (data, target) in enumerate(train_loader) :
+            
+            # Convert data to be uses on GPU
+            data = data.cuda()  
+            target = target.cuda()
+            
             # Wrap the input and target output in the 'Variable' wrapper
             data, target = Variable(data), Variable(target)
     
@@ -281,7 +282,7 @@ class CNN(nn.Module) :
                         epoch, batch * len(data), len(train_loader.dataset),
                         100. * batch / len(train_loader),
                         loss.data))
-    # end train()
+    # end train_model()
 
 
     # Function to test the model
@@ -303,13 +304,19 @@ class CNN(nn.Module) :
         correct = 0
     
         # Define loss function
-        loss_func = torch.nn.CrossEntropyLoss(size_average=False)
+        loss_func = torch.nn.CrossEntropyLoss(reduction="sum")
     
         # Measure starting time
         start = perf_counter()
         
         # Iterate over data
         for data, target in test_loader:
+            
+            # Convert data to be uses on GPU
+            data = data.cuda()  
+            target = target.cuda()
+            
+            # Wrap the input and target output in the 'Variable' wrapper
             data, target = Variable(data), Variable(target)
             
             # Forward propagation
@@ -319,10 +326,10 @@ class CNN(nn.Module) :
             test_loss += loss_func(output, target).data
     
             # Get the index of the max log-probability (the predicted output label)
-            pred = np.argmax(output.data, axis=1)
+            pred = torch.argmax(output.data, dim=1)
     
             # If correct, increment correct prediction accumulator
-            correct = correct + np.equal(pred, target.data).sum()
+            correct = correct + torch.eq(pred, target.data).sum()
     
         # Measure ending time
         end = perf_counter()
@@ -333,11 +340,13 @@ class CNN(nn.Module) :
         self.time = end - start                                                 # Time elapsed for the test
         
         # Print log
-        print('\nTest set, Epoch {} , Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%) in {:.2f}s\n'.format(epoch,
-              test_loss, correct, len(test_loader.dataset),
-              self.accuracy,
+        print('\nTest set, Epoch {} , Average loss: {:.4f}, Inaccuracy: {}/{} ({:.2f}%) in {:.3f}s\n'.format(epoch,
+              test_loss, 
+              len(test_loader.dataset) - correct, 
+              len(test_loader.dataset),
+              self.inaccuracy,
               self.time))   
-    # end test()
+    # end test_model()
 
 
     # Function to evaluate the model
@@ -367,7 +376,7 @@ class CNN(nn.Module) :
             # Testing phase
             self.test_model(epoch, test_loader)
         # end for epoch
-    # end evaluate
+    # end evaluate_model()
     
 # end class CNN
         
