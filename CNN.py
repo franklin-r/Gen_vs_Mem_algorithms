@@ -181,7 +181,7 @@ class CNN(nn.Module) :
         # Update the height and width
         img_h = ((img_h - self.layers[len(self.layers) - 1].kernel_size) // self.layers[len(self.layers) - 1].stride) + 1
         img_w = ((img_w - self.layers[len(self.layers) - 1].kernel_size) // self.layers[len(self.layers) - 1].stride) + 1
-                
+        print("h : {}\tw : {}".format(img_h, img_w)) 
         # Add a fully connected layer
         self.layers.append(
                 nn.Linear(in_features=self.layers[len(self.layers) - 5].out_channels * img_h * img_w,
@@ -195,7 +195,7 @@ class CNN(nn.Module) :
         
         for i in range(len(self.layers) - 1) :  # Stops before the fully connected layer
             x = self.layers[i](x)
-          
+        print("shape de x : {}".format(x.shape))
         # Apply to the fully connected layer
         x = x.view(x.size()[0], -1)
         x = self.layers[len(self.layers)-1](x)

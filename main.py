@@ -12,6 +12,7 @@ Created on Sat Mar  7 14:29:58 2020
 
 import torch
 import Population as Pop
+import CNN
 
 if __name__ == "__main__" :
     
@@ -19,8 +20,8 @@ if __name__ == "__main__" :
     torch.manual_seed(123)
     
     # Sets of possible hyper-parameters
-    NL_set = range(3, 5)
-    NF_set = range(3, 6)
+    NL_set = [i for i in range(8, 15)]
+    NF_set = [i for i in range(3, 6)]
     lr_set = [0.1, 0.01, 0.001, 0.0001]
     mom_set = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]
     
@@ -49,10 +50,8 @@ if __name__ == "__main__" :
                              train_batch_size=curr_pop.train_batch_size,
                              test_batch_size=curr_pop.test_batch_size)
         
-        
-        
-        
-        
+    
+      
         
         
         
