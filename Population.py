@@ -23,7 +23,7 @@ class Population() :
     \Description : Population for genetic algorithms
     \Attributes :
         dataset             : dataset used
-        size                : population's size
+        size                : population's size (must be an even number)
         NL_set              : set of possible values for the number of hidden layers
         NF_set              : set of possible values for the number of feature maps
         lr_set              : set of possible values for the learning rate
@@ -34,16 +34,17 @@ class Population() :
         train_batch_size    : size of the training batch
         test_batch_size     : size of the testing batch
     """
-    def __init__(self, dataset, size, NL_set, NF_set, lr_set, mom_set) :
+    def __init__(self, dataset, size, NL_set, NF_set, lr_set, mom_set, indiv_list=[]) :
         """
         \Description: Build a population of random individual
         \Args : 
-            dataset : dataset used
-            size    : population's size
-            NL_set  : set of possible values for the number of hidden layers
-            NF_set  : set of possible values for the number of feature maps
-            lr_set  : set of possible values for the learning rate
-            mom_set : set of possible values for the momentum
+            dataset     : dataset used
+            size        : population's size
+            NL_set      : set of possible values for the number of hidden layers
+            NF_set      : set of possible values for the number of feature maps
+            lr_set      : set of possible values for the learning rate
+            mom_set     : set of possible values for the momentum
+            indiv_list  : list of individuals
         \Outputs : None
         """
         
@@ -56,23 +57,34 @@ class Population() :
         self.lr_set = lr_set
         self.mom_set = mom_set
         
-        self.pop = []                   # List of the individuals in the population
+        self.pop = indiv_list           # List of the individuals in the population
         self.train_loader = None        # Train loader
         self.test_loader = None         # Test loader
         self.train_batch_size = 0       # Size of the training batch
         self.test_batch_size = 0        # Size of the testing batch
         
         
-        # Create an initial populations
-        for i in range(0, self.size) :
-            # Append a random individual
-            self.pop.append(
-                    CNN.CNN(dataset=self.dataset,
-                            NL=choice(self.NL_set),
-                            NF=choice(self.NF_set),
-                            lr=choice(self.lr_set),
-                            mom=choice(self.mom_set)).cuda())
-    # end __init__()        
+        if indiv_list == [] :
+            # Create a random initial populations
+            for i in range(0, self.size) :
+                # Append a random individual
+                '''
+                self.pop.append(
+                        CNN.CNN(dataset=self.dataset,
+                                NL=choice(self.NL_set),
+                                NF=choice(self.NF_set),
+                                lr=choice(self.lr_set),
+                                mom=choice(self.mom_set)).cuda())
+                '''
+                self.pop.append(
+                        CNN.CNN(dataset=self.dataset,
+                                NL=choice(self.NL_set),
+                                NF=choice(self.NF_set),
+                                lr=choice(self.lr_set),
+                                mom=choice(self.mom_set)))
+            # end for i
+        # end if indiv_list == []
+    # end __init__()    
             
         
     # Print the caracteristics fo the population

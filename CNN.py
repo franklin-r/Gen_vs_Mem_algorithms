@@ -32,10 +32,11 @@ class CNN(nn.Module) :
         layers      : list of layers
         inaccuracy  : inaccuracy of the model during the test phase
         time        : computation time during the test phase
+        fitness     : fitness score of the model
     """
     def __init__(self, dataset, NL, NF, lr, mom) :
         """
-        \Description: Build a CNN following specific rules. Those are [A. Bakshi et al. 2019] :
+        \Description : Build a CNN following specific rules. Those are [A. Bakshi et al. 2019] :
             "
             (1) The CNN architecture is created by an alternative combination of the convolutional and max pooling layers 
             that are followed by an averaging pooling layer and a linear fully connected layer on the top
@@ -65,6 +66,7 @@ class CNN(nn.Module) :
         self.layers     = nn.ModuleList()                                       # Array of layers
         self.inaccuracy = 0.0                                                   # Inaccuracy during the test phase
         self.time       = 0.0                                                   # Computation time during the test phase
+        self.fitness    = 0.0                                                   # Fitness score of the model
         
         if dataset == "MNIST" :
             in_channels = 1    # Input dimension
@@ -165,11 +167,11 @@ class CNN(nn.Module) :
             
             # Add the max pooling layer after the convolutional block
             self.layers.append(nn.MaxPool2d(kernel_size= 2,
-                                            stride=2))
+                                            stride=1))
             
             # Update the height and width
-            img_h = ((img_h - self.layers[len(self.layers) - 1].kernel_size) // self.layers[len(self.layers) - 1].stride) + 1
-            img_w = ((img_w - self.layers[len(self.layers) - 1].kernel_size) // self.layers[len(self.layers) - 1].stride) + 1
+            img_h = (img_h - self.layers[len(self.layers) - 1].kernel_size) + 1     # Not divided by the stride because it is 1
+            img_w = (img_w - self.layers[len(self.layers) - 1].kernel_size) + 1     # Not divided by the stride because it is 1
             
             NL -= 1         # Decrements the number of layers left      
         # end while NL > 0
@@ -179,9 +181,9 @@ class CNN(nn.Module) :
                                         stride=1))  
         
         # Update the height and width
-        img_h = ((img_h - self.layers[len(self.layers) - 1].kernel_size) // self.layers[len(self.layers) - 1].stride) + 1
-        img_w = ((img_w - self.layers[len(self.layers) - 1].kernel_size) // self.layers[len(self.layers) - 1].stride) + 1
-        print("h : {}\tw : {}".format(img_h, img_w)) 
+        img_h = (img_h - self.layers[len(self.layers) - 1].kernel_size) + 1      # Not divided by the stride because it is 1
+        img_w = (img_w - self.layers[len(self.layers) - 1].kernel_size) + 1      # Not divided by the stride because it is 1
+        
         # Add a fully connected layer
         self.layers.append(
                 nn.Linear(in_features=self.layers[len(self.layers) - 5].out_channels * img_h * img_w,
@@ -192,10 +194,10 @@ class CNN(nn.Module) :
 
     # Forward propagate
     def forward(self, x) :
-        
         for i in range(len(self.layers) - 1) :  # Stops before the fully connected layer
             x = self.layers[i](x)
-        print("shape de x : {}".format(x.shape))
+        # end for i
+        
         # Apply to the fully connected layer
         x = x.view(x.size()[0], -1)
         x = self.layers[len(self.layers)-1](x)
@@ -256,8 +258,8 @@ class CNN(nn.Module) :
         for batch, (data, target) in enumerate(train_loader) :
             
             # Convert data to be uses on GPU
-            data = data.cuda()  
-            target = target.cuda()
+            #data = data.cuda()  
+            #target = target.cuda()
             
             # Wrap the input and target output in the 'Variable' wrapper
             data, target = Variable(data), Variable(target)
@@ -313,8 +315,8 @@ class CNN(nn.Module) :
         for data, target in test_loader:
             
             # Convert data to be uses on GPU
-            data = data.cuda()  
-            target = target.cuda()
+            #data = data.cuda()  
+            #target = target.cuda()
             
             # Wrap the input and target output in the 'Variable' wrapper
             data, target = Variable(data), Variable(target)
