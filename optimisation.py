@@ -12,47 +12,53 @@ Created on Sun Mar  8 20:46:12 2020
 
 import Population as Pop
 import CNN
-from random import sample, shuffle, randint, random, choice
+from random import sample, shuffle, random, choice
 
 
-def pop_next_iter(model, popul) :
+def pop_next_iter(popul, model) :
     """
     \Description : Determine the population of best individuals for the next iteration
     \Args : 
-        model   : the model to test  
         popul   : the population to test
+        model   : the model to test
     \Outputs : None
     """
-    new_pop = []            # List containing the individual of the next iteration
-    add = False
+    new_pop = []            # List containing the models of the next iteration  
+    add = True              # Boolean indicating whether or not to add model to the next iteration
     
-    
+    # Iterate through the whole population
     for i in range(0, len(popul.pop)) :
-        # doit parcourir toute la population
-        
-        #If model dominates another one
-        if model.inaccuracy <= popul.pop[i].inaccuracy and model.time <= popul.pop[i].time :
-            add = True              # This model can be added to the nex iteration
-                                    # and we do not add popul.pop[i]
-            
         # If model is dominated by another one
-        elif model.inaccuracy > popul.pop[i].inaccuracy and model.time > popul.pop[i].time :
-            add = False                         # We do not add model  
-            new_pop += popul.pop[i:]            # We add the rest of popul.pop
+        if model.inaccuracy > popul.pop[i].inaccuracy and model.time > popul.pop[i].time :
+            # We add the rest of the population but not model
+            add = False
+            new_pop.extend(popul.pop[i:])
             break                               # We stop for this model
-        # end if
+        
+        # If model dominates another one
+        elif model.inaccuracy < popul.pop[i].inaccuracy and model.time < popul.pop[i].time :
+            # We add model but popul.pop[i]
+            add = True
+            
+        # Any other case, i.e. :
+        # model.inaccuracy < popul.pop[i].inaccuracy and model.time > popul.pop[i].time
+        # model.inaccuracy > popul.pop[i].inaccuracy and model.time < popul.pop[i].time
+        # model.inaccuracy == popul.pop[i].inaccuracy and model.time == popul.pop[i].time
+        # falls in the case in which we add both model and popul.pop[i] to the next iteration
+        else :
+            add = True
+            new_pop.append(popul.pop[i])
+         # end if   
     # end for i
     
-    # Once the population has been looped over, we check if we can add model to the next iteration
     if add == True :
         new_pop.append(model)
-    # end if
-    
+        
     # Update the population for the next iteration
-    popul.pop = new_pop
+    popul.pop = new_pop[:]
     
     # Udate the size of the population
-    popul.size = len(new_pop)
+    popul.size = len(popul.pop)
 # end pop_next_iter()
 
 
@@ -82,7 +88,7 @@ def grid_search(popul) :
                     model.evaluate_model()
                     
                     # Check if the individual is optimal
-                    pop_next_iter(model,popul)                    
+                    pop_next_iter(popul, model)                    
                     
                 # end for momentum
             # end for lr
@@ -235,6 +241,61 @@ def mutation(pop_child, pm) :
     # end for
 # end mutation() 
     
+    
+def pareto_front(popul) :
+    """
+    \Description : Return the Pareto frontier of a population
+    \Args : 
+        popul   : the population 
+    \Outputs : 
+        pareto_front : the list of individuals of the Pareto frontier
+    """
+    # Initialize the Pareto frontier with the first individual
+    pareto_front = [popul.pop[0]] 
+
+    # Temporary Pareto frontier
+    pareto_front_tmp = pareto_front[:]    
+    
+    # Boolean indicating whether or not to add an individual t the Pareto frontier
+    add = True              
+        
+    # Iterate through the whole population
+    for i in range(1, len(popul.pop)) :    # Start at 1 because indiv at index 0 is already in the Pareto frontier
+        # Iterate through the whole Pareto frontier
+        for j in range(0, len(pareto_front)) :
+            # If popul.pop[i] is dominated by a Pareto optimal individual
+            if popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time :
+                # We add the rest of the Pareto frontier but not popul.pop[i]
+                add = False
+                pareto_front_tmp.extend(pareto_front[j:])
+                break                               # We stop for this model
+            
+            # If popul.pop[i] dominates a Pareto optimal individal
+            elif popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time :
+                # We add popul.pop[i] but not pareto_front[j]
+                add = True
+                
+            # Any other case, i.e. :
+            # popul.pop[i].inaccuracy == pareto_front[j].inaccuracy and popul.pop[i].time == pareto_front[j].time
+            # popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time
+            # popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time
+            # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
+            else :
+                add = True
+                pareto_front_tmp.append(pareto_front[j])
+            # end if
+        # end for j
+        
+        if add == True :
+            pareto_front_tmp.append(popul.pop[i])
+            
+        # Update the population for the next iteration
+        pareto_front = pareto_front_tmp[:]
+    # end for i
+    
+    return pareto_front
+# end pareto_front()
+    
   
 def gen_algo(popul, gen_max, nb_best, pm) :
     """
@@ -271,6 +332,43 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     # end for gen
 # end gen_algo()
     
+'''   
+def local_search(popul, model, radius, nb_neighb) :    
+    """
+    \Description : Apply a local search algorithm to a population
+    \Args : 
+        popul       : the population of individual to evolve
+        model       : the starting model
+        radius      : the radius in which to search for the solution
+        nb_neighb   : number of neighbours to test in the radius
+    \Outputs : None
+    """
+    
+    # parcourir la population
+    # si neighb_cnt == nb_neighb
+        # break
+        
+    # curr_model = model
+    
+    
+    # si inaccuracy curr_model - radius < inaccuracy modèle courant < inaccuracy curr_model \
+    # et que time curr_model - radius < time modèle courant < time curr_model
+        # neighb_cnt += 1
+        # curr_model = modèle courant
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+# end local_search()
  
 # --- TO DO ---
 def mem_algo(popul, gen_max, nb_best, pm) :
@@ -308,7 +406,7 @@ def mem_algo(popul, gen_max, nb_best, pm) :
         del pop_child
     # end for gen
 # end gen_algo()
-        
+'''      
     
     
     
