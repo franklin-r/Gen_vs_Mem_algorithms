@@ -35,8 +35,6 @@ def pop_next_iter(model, popul) :
             add = True              # This model can be added to the nex iteration
                                     # and we do not add popul.pop[i]
             
-        
-        # dès qu'on trouve qu'il est dominé par un autre, on arrête pour cet individu
         # If model is dominated by another one
         elif model.inaccuracy > popul.pop[i].inaccuracy and model.time > popul.pop[i].time :
             add = False                         # We do not add model  
@@ -158,23 +156,40 @@ def selection(popul, nb_best) :
 def crossover(pop_next) : 
     """
     \Description :  Randomly select pairs of individuals and crossover them to produce a child.
-                    Genes are randmoly chosen from each parents
+                    Crossover is a 1-point crossover.
     \Args : 
         pop_next    : the population to crossover
     \Outputs : 
         pop_child : The population containing the children
     """
-    shuffle(pop_next.pop)            # Shuffle the individuals to insert randomness
+    # Shuffle the individuals to insert randomness
+    shuffle(pop_next.pop)            
     
-    couples = [pop_next.pop[i*2 : (i+1)*2] for i in (len(pop_next.pop) // 2)]   # Create the couples
+    # Create the couples
+    couples = [pop_next.pop[i*2 : (i+1)*2] for i in (len(pop_next.pop) // 2)]   
 
-    children = []          # Contains the children
+    children = []          # Contains the children     
+    
     for couple in couples :
+        
+        # Select the genes that the child heritates
+    
+        # Make a list from the keys in chromosome dictionary
+        genes = list(couple[0].chromosome.keys())   
+        
+        # Randomly select a cut gene 
+        # Before this gene, the child heritates from parent 1's genes, after from parent 2's
+        cut_gene = choice(genes)
+        
+        child_gene = [couple[0].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
+                         [couple[1].chromosome.get(val) for val in genes[genes.index(cut_gene):]]
+        
+        # Create the child from the new genes
         children.append(CNN.CNN(dataset=pop_next.dataset, 
-                                NL=couple[randint(0, 1)].NL,            # Randomly select one of the parents' NL
-                                NF=couple[randint(0, 1)].NF, 
-                                lr=couple[randint(0, 1)].lr, 
-                                mom=couple[randint(0, 1)].mom))
+                                NL=child_gene[0],            
+                                NF=child_gene[1], 
+                                lr=child_gene[2], 
+                                mom=child_gene[3]))
     # end for couple
     
     # Create the corresponding population
@@ -246,7 +261,6 @@ def gen_algo(popul, gen_max, nb_best, pm) :
         # --- MUTATION ---
         mutation(pop_child, pm)
         
-        # Update of current population. 
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
