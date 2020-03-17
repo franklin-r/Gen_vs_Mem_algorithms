@@ -194,7 +194,7 @@ class CNN(nn.Module) :
 
     # Forward propagate
     def forward(self, x) :
-        for i in range(len(self.layers) - 1) :  # Stops before the fully connected layer
+        for i in range(len(self.layers) - 1) :  # Stop before the fully connected layer
             x = self.layers[i](x)
         # end for i
         

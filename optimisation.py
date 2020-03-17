@@ -135,7 +135,8 @@ def selection(popul, nb_best) :
     \Description : Select the best individuals of a population as well as randopm individuals from the rest of the population
     \Args : 
         popul   : the population of individual to evolve
-        nb_best : number of best individuals to select (ensure that ((popul.size // 2) - nb_best) is a multiple of 4)
+        nb_best : number of best individuals to select (must be a even to ensure that ((popul.size // 2) - nb_best) 
+                    is a multiple of 4)
     \Outputs : 
         pop_next : The population of next generation
     """
@@ -153,7 +154,11 @@ def selection(popul, nb_best) :
                               NF_set=popul.NF_set,
                               lr_set=popul.lr_set, 
                               mom_set=popul.mom_set, 
-                              indiv_list=selected_indiv)
+                              indiv_list=selected_indiv,
+                              train_loader=popul.train_loader,
+                              test_loader=popul.test_loader,
+                              train_batch_size=popul.train_batch_size,
+                              test_bach_size=popul.test_batch_size)
     
     return pop_next
 # end selection()
@@ -176,13 +181,13 @@ def crossover(pop_next) :
 
     children = []          # Contains the children     
     
+    # Make a list from the keys in chromosome dictionary
+    genes = list(pop_next.pop[0].chromosome.keys())   
+    
     for couple in couples :
         
         # Select the genes that the child heritates
     
-        # Make a list from the keys in chromosome dictionary
-        genes = list(couple[0].chromosome.keys())   
-        
         # Randomly select a cut gene 
         # Before this gene, the child heritates from parent 1's genes, after from parent 2's
         cut_gene = choice(genes)
@@ -205,7 +210,11 @@ def crossover(pop_next) :
                                NF_set=pop_next.NF_set,
                                lr_set=pop_next.lr_set, 
                                mom_set=pop_next.mom_set,
-                               indiv_list=children)
+                               indiv_list=children,
+                               train_loader=pop_next.train_loader,
+                               test_loader=pop_next.test_loader,
+                               train_batch_size=pop_next.train_batch_size,
+                               test_bach_size=pop_next.test_batch_size)
      
     return pop_child
 # end crossover()
@@ -256,11 +265,13 @@ def pareto_front(popul) :
     # Temporary Pareto frontier
     pareto_front_tmp = pareto_front[:]    
     
-    # Boolean indicating whether or not to add an individual t the Pareto frontier
-    add = True              
+                 
         
     # Iterate through the whole population
-    for i in range(1, len(popul.pop)) :    # Start at 1 because indiv at index 0 is already in the Pareto frontier
+    for i in range(1, len(popul.pop)) :    # Start at index 1 because indiv at index 0 is already in the Pareto frontier
+        # Boolean indicating whether or not to add an individual in the Pareto frontier
+        add = True 
+    
         # Iterate through the whole Pareto frontier
         for j in range(0, len(pareto_front)) :
             # If popul.pop[i] is dominated by a Pareto optimal individual
@@ -270,19 +281,14 @@ def pareto_front(popul) :
                 pareto_front_tmp.extend(pareto_front[j:])
                 break                               # We stop for this model
             
-            # If popul.pop[i] dominates a Pareto optimal individal
-            elif popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time :
-                # We add popul.pop[i] but not pareto_front[j]
-                add = True
-                
             # Any other case, i.e. :
+            # popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time
             # popul.pop[i].inaccuracy == pareto_front[j].inaccuracy and popul.pop[i].time == pareto_front[j].time
             # popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time
             # popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time
-            # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
-            else :
-                add = True
-                pareto_front_tmp.append(pareto_front[j])
+            # falls in the case in which we only add popul.pop[i] but not pareto_front[j] to the Pareto front
+            # These cases are handled by the default value of add to True and therefore does not require an else case
+            
             # end if
         # end for j
         
@@ -332,10 +338,10 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     # end for gen
 # end gen_algo()
     
-'''   
-def local_search(popul, model, radius, nb_neighb) :    
+''' 
+def local_search(popul, radius, nb_neighb) :    
     """
-    \Description : Apply a local search algorithm to a population
+    \Description : Apply a local search algorithm to an individual of population
     \Args : 
         popul       : the population of individual to evolve
         model       : the starting model
@@ -351,11 +357,34 @@ def local_search(popul, model, radius, nb_neighb) :
     # curr_model = model
     
     
-    # si inaccuracy curr_model - radius < inaccuracy modèle courant < inaccuracy curr_model \
-    # et que time curr_model - radius < time modèle courant < time curr_model
+    # si inaccuracy model - radius < inaccuracy modèle courant < inaccuracy model \
+    # et que time model - radius < time modèle courant < time model
         # neighb_cnt += 1
-        # curr_model = modèle courant
-        
+        # new_model = modèle courant
+     
+    fittest_model = model
+    
+    # Iterate through the whole population
+    for indiv in popul.pop :
+        # If indiv is in the quarter circle that defines a best model
+        if model.inaccuracy - radius < indiv.inaccuracy and indiv.inaccuracy < model.inaccuracy \
+        and model.time - radius < indiv.time and indiv.time < model.time :
+            
+            # If indiv is fitter than the fittest of the neighbours
+            if indiv.inaccuracy < fittest_model.inaccuracy and indiv.time < fittest_model.time :
+                fittest_model = CNN.CNN(dataset=popul.dataset,
+                                    NL = indiv.NL,
+                                    NF=indiv.NF,
+                                    lr=indiv.lr,
+                                    mom=indiv.mom)
+            # end if
+        # end if
+    # end for indiv
+    
+    
+    
+    
+            
     
     
     
@@ -369,7 +398,9 @@ def local_search(popul, model, radius, nb_neighb) :
     
     
 # end local_search()
- 
+''' 
+    
+'''
 # --- TO DO ---
 def mem_algo(popul, gen_max, nb_best, pm) :
     """

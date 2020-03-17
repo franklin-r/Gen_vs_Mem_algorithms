@@ -23,7 +23,7 @@ class Population() :
     \Description : Population for genetic algorithms
     \Attributes :
         dataset             : dataset used
-        size                : population's size (must be an even number)
+        size                : population's size (must be a multiple of 4)
         NL_set              : set of possible values for the number of hidden layers
         NF_set              : set of possible values for the number of feature maps
         lr_set              : set of possible values for the learning rate
@@ -34,17 +34,22 @@ class Population() :
         train_batch_size    : size of the training batch
         test_batch_size     : size of the testing batch
     """
-    def __init__(self, dataset, size, NL_set, NF_set, lr_set, mom_set, indiv_list=[]) :
+    def __init__(self, dataset, size, NL_set, NF_set, lr_set, mom_set, indiv_list=[], \
+                 train_loader=None, test_loader=None, train_batch_size=0, test_batch_size=0) :
         """
         \Description: Build a population of random individual
         \Args : 
-            dataset     : dataset used
-            size        : population's size
-            NL_set      : set of possible values for the number of hidden layers
-            NF_set      : set of possible values for the number of feature maps
-            lr_set      : set of possible values for the learning rate
-            mom_set     : set of possible values for the momentum
-            indiv_list  : list of individuals
+            dataset             : dataset used
+            size                : population's size (must be a multiple of 4)
+            NL_set              : set of possible values for the number of hidden layers
+            NF_set              : set of possible values for the number of feature maps
+            lr_set              : set of possible values for the learning rate
+            mom_set             : set of possible values for the momentum
+            indiv_list          : list of individuals
+            train_loader        : train loader
+            test_loader         : test_loader
+            train_batch_size    : size of the training batch
+            test_batch_size     : size of the testing batch
         \Outputs : None
         """
         
@@ -57,11 +62,11 @@ class Population() :
         self.lr_set = lr_set
         self.mom_set = mom_set
         
-        self.pop = indiv_list           # List of the individuals in the population
-        self.train_loader = None        # Train loader
-        self.test_loader = None         # Test loader
-        self.train_batch_size = 0       # Size of the training batch
-        self.test_batch_size = 0        # Size of the testing batch
+        self.pop = indiv_list                       # List of the individuals in the population
+        self.train_loader = train_loader            # Train loader
+        self.test_loader = test_loader              # Test loader
+        self.train_batch_size = train_batch_size    # Size of the training batch
+        self.test_batch_size = test_batch_size      # Size of the testing batch
         
         
         if indiv_list == [] :

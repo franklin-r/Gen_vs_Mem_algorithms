@@ -24,6 +24,7 @@ if __name__ == "__main__" :
     lr_set = [0.1, 0.01, 0.001, 0.0001]
     mom_set = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]
     
+    '''
     # Create a population
     curr_pop = Pop.Population(dataset="MNIST", 
                               size=1, 
@@ -53,7 +54,7 @@ if __name__ == "__main__" :
                              epochs=10,
                              train_batch_size=curr_pop.train_batch_size,
                              test_batch_size=curr_pop.test_batch_size)
-        
+    '''    
     
       
         
