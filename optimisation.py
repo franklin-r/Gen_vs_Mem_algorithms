@@ -336,10 +336,6 @@ def gen_algo(popul, gen_max, nb_best, pm) :
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
-        
-        # Delete intermediate populations to free space
-        del pop_next
-        del pop_child
     # end for gen
 # end gen_algo()
     
@@ -406,16 +402,16 @@ def local_search(popul, radius, nb_neighb) :
 # end local_search()
  
     
-'''
-# --- TO DO ---
-def mem_algo(popul, gen_max, nb_best, pm) :
+def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     """
     \Description : Apply a memetic algorithm to a population
     \Args : 
-        popul   : the population of individual to evolve
-        gen_max : max number of generations
-        nb_best : number of best individuals to select for crossover 
-        pm      : probability for an individual to mutate
+        popul       : the population of individual to evolve
+        gen_max     : max number of generations
+        nb_best     : number of best individuals to select for crossover 
+        pm          : probability for an individual to mutate
+        radius      : the radius in which to search for the solution during the local search
+        nb_neighb   : number of neighbours to test in the radius during the local search
     \Outputs : None
     """
     
@@ -423,6 +419,9 @@ def mem_algo(popul, gen_max, nb_best, pm) :
         
         # --- EVALUATION ---
         eval_pop(popul)
+        
+        # --- LOCAL SEARCH ---
+        local_search(popul, radius, nb_neighb)
         
         # --- SELECTION --- 
         pop_next = selection(popul, nb_best)   
@@ -433,17 +432,12 @@ def mem_algo(popul, gen_max, nb_best, pm) :
         # --- MUTATION ---
         mutation(pop_child, pm)
         
-        # Update of current population. 
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
-        
-        # Delete intermediate populations to free space
-        del pop_next
-        del pop_child
     # end for gen
 # end gen_algo()
-'''      
+    
     
     
     
