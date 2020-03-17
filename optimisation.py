@@ -281,14 +281,19 @@ def pareto_front(popul) :
                 pareto_front_tmp.extend(pareto_front[j:])
                 break                               # We stop for this model
             
+            # If popul.pop[i] dominates a Pareto optimal individual
+            elif popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time :
+                # We had popul.pop[i] but not pareto_front[j]
+                add = True
+            
             # Any other case, i.e. :
-            # popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time
             # popul.pop[i].inaccuracy == pareto_front[j].inaccuracy and popul.pop[i].time == pareto_front[j].time
             # popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time
             # popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time
-            # falls in the case in which we only add popul.pop[i] but not pareto_front[j] to the Pareto front
-            # These cases are handled by the default value of add to True and therefore does not require an else case
-            
+            # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
+            else :
+                add = True
+                pareto_front_tmp.append(pareto_front[j])
             # end if
         # end for j
         
@@ -338,7 +343,7 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     # end for gen
 # end gen_algo()
     
-''' 
+
 def local_search(popul, radius, nb_neighb) :    
     """
     \Description : Apply a local search algorithm to an individual of population
@@ -348,57 +353,58 @@ def local_search(popul, radius, nb_neighb) :
         radius      : the radius in which to search for the solution
         nb_neighb   : number of neighbours to test in the radius
     \Outputs : None
+    \Notes : 
+        In the case we do not the individuals before the local search, we might start to perform local search on "average"
+        individual and replace them with fitter individuals. The probleme lays in the case where the former were in the 
+        radius of a optimizable individual.
+        After the local search on the "average" individual, it disappears from the radius 
+        of an optimizable individual and therefore the latter cannot be optimized anymore.
+        The current implementation does not take into account this and a future feature could be added to sort the individuals
+        into successive Pareto frontier beforehand if the density of the individuals is to high and such a feature could 
+        improve the results. Then we could perform the local search starting from the least fit Pareto frontier.            
     """
-    
-    # parcourir la population
-    # si neighb_cnt == nb_neighb
-        # break
-        
-    # curr_model = model
-    
-    
-    # si inaccuracy model - radius < inaccuracy modèle courant < inaccuracy model \
-    # et que time model - radius < time modèle courant < time model
-        # neighb_cnt += 1
-        # new_model = modèle courant
-     
-    fittest_model = model
+    # New population after local search
+    new_pop = []
     
     # Iterate through the whole population
-    for indiv in popul.pop :
-        # If indiv is in the quarter circle that defines a best model
-        if model.inaccuracy - radius < indiv.inaccuracy and indiv.inaccuracy < model.inaccuracy \
-        and model.time - radius < indiv.time and indiv.time < model.time :
+    for i in range(0, len(popul.pop)) :
+        
+        # Counter of visited neighbours
+        visited_neighb = 0
+        
+        # Initialize the fittest model of the neighbourhood to the origin model
+        fittest_model = popul.pop[i]
+        
+        # Iterate through the whole population but the fixed individual
+        for candidate in (popul.pop[0:i] + popul.pop[i+1:len(popul.pop)]) :
             
-            # If indiv is fitter than the fittest of the neighbours
-            if indiv.inaccuracy < fittest_model.inaccuracy and indiv.time < fittest_model.time :
-                fittest_model = CNN.CNN(dataset=popul.dataset,
-                                    NL = indiv.NL,
-                                    NF=indiv.NF,
-                                    lr=indiv.lr,
-                                    mom=indiv.mom)
+            # Stop the local search when enough neighbours has been visited
+            if visited_neighb == nb_neighb :
+                break
+            
+            # If candidate is in the quarter circle that defines a better model than popul.pop[i]
+            if (popul.pop[i].inaccuracy - radius <= candidate.inaccuracy) and (candidate.inaccuracy < popul.pop[i].inaccuracy) \
+            and (popul.pop[i].time - radius <= candidate.time) and (candidate.time < popul.pop[i].time) :
+            
+            
+                # If candidate is fitter than the fittest of the neighbours
+                if (candidate.inaccuracy < fittest_model.inaccuracy) and (candidate.time < fittest_model.time) :
+                    # Replace the fittest model
+                    fittest_model = candidate
+                # end if
             # end if
-        # end if
-    # end for indiv
-    
-    
-    
-    
             
+            visited_neighb += 1
+        # end for candidate
+        
+        # Add the fittest model to the future population
+        new_pop.append(fittest_model)
+    # end for i
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # Update the population
+    popul.pop = new_pop[:]
 # end local_search()
-''' 
+ 
     
 '''
 # --- TO DO ---
