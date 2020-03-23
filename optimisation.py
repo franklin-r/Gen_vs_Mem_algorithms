@@ -13,7 +13,8 @@ Created on Sun Mar  8 20:46:12 2020
 import Population as Pop
 import CNN
 from random import sample, shuffle, random, choice
-from time import perf_counter
+from time import clock
+#from time import perf_counter
 
 
 def pop_next_iter(popul, model) :
@@ -82,8 +83,9 @@ def grid_search(popul) :
     save_counter = 100
     
     # Measure starting time
-    start = perf_counter()
-        
+    #start = perf_counter()
+    start = clock()
+    
     for NL in popul.NL_set :
         for NF in popul.NF_set :
             for lr in popul.lr_set :
@@ -111,8 +113,9 @@ def grid_search(popul) :
     # end for NL
     
     # Measure starting time
-    end = perf_counter()
-    
+    #end = perf_counter()
+    end = clock()
+	
     # Column names
     header = ["N° of Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]        
     

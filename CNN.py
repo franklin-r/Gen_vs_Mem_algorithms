@@ -15,7 +15,8 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
 from random import choice, randint
-from time import perf_counter
+from time import clock
+#from time import perf_counter
 
 
 # Define the CNN
@@ -62,7 +63,7 @@ class CNN(nn.Module) :
         super(CNN, self).__init__()
         
         self.dataset    = dataset                                               # Dataset used
-        self.chromosome = {"NL" : NL, "NF" : NF, "lr" : lr, "momentum" : mom}   # Hyper-parameters of the network
+        self.chromosome = {"NL" : NL, "NF" : NF, "lr" : lr, "mom" : mom}        # Hyper-parameters of the network
         self.layers     = nn.ModuleList()                                       # Array of layers
         self.inaccuracy = 0.0                                                   # Inaccuracy during the test phase
         self.time       = 0.0                                                   # Computation time during the test phase
@@ -215,6 +216,8 @@ class CNN(nn.Module) :
         print("CNN")
         print("Number of hidden layers : {}".format(self.chromosome["NL"]))
         print("Number of feature maps : {}".format(self.chromosome["NF"]))
+        print("Learning rate : {}".format(self.chromosome["lr"]))
+        print("Momentum : {}".format(self.chromosome["mom"]))
         
         print("Architecture :")
         for i in range(len(self.layers)) :
@@ -310,7 +313,8 @@ class CNN(nn.Module) :
         loss_func = torch.nn.CrossEntropyLoss(reduction="sum")
     
         # Measure starting time
-        start = perf_counter()
+        #start = perf_counter()
+        start = clock()
         
         # Iterate over data
         for data, target in test_loader:
@@ -336,8 +340,8 @@ class CNN(nn.Module) :
             correct = correct + torch.eq(pred, target.data).sum()
     
         # Measure ending time
-        end = perf_counter()
-        
+        #end = perf_counter()
+        end = clock()
         
         test_loss /= len(test_loader.dataset)
         self.inaccuracy = 100 - (100. * correct / len(test_loader.dataset))     # Inaccuracy of the model
@@ -369,7 +373,7 @@ class CNN(nn.Module) :
         # Optimizer for training phase
         optimizer = optim.SGD(self.parameters(), 
                               lr=self.chromosome["lr"], 
-                              momentum=self.chromosome["momentum"])
+                              momentum=self.chromosome["mom"])
         
         # Evaluation of the individual
         log_interval = 100
