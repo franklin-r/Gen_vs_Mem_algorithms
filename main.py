@@ -18,15 +18,30 @@ if __name__ == "__main__" :
      # Provide seed for the pseudorandom number generator
     torch.manual_seed(123)
     
+    print("Cuda available ? {}".format(torch.cuda.is_available()))
+    
     # Sets of possible hyper-parameters
-    NL_set = [i for i in range(3, 5)]
+    NL_set = [i for i in range(8, 16)]
     NF_set = [i for i in range(3, 6)]
     lr_set = [0.1, 0.01, 0.001, 0.0001]
     mom_set = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]
     
     '''
     # Create a population
-    curr_pop = Pop.Population(dataset="MNIST", 
+    curr_pop = Pop.Population(dataset="CIFAR10", 
+                              size=0, 
+                              NL_set=NL_set, 
+                              NF_set=NF_set, 
+                              lr_set=lr_set, 
+                              mom_set=mom_set)
+    
+    # Print population's info
+    curr_pop.printPopulation()
+    '''
+    
+    
+    # Create a population
+    curr_pop = Pop.Population(dataset="CIFAR10", 
                               size=1, 
                               NL_set=NL_set, 
                               NF_set=NF_set, 
@@ -54,7 +69,7 @@ if __name__ == "__main__" :
                              epochs=10,
                              train_batch_size=curr_pop.train_batch_size,
                              test_batch_size=curr_pop.test_batch_size)
-    '''    
+       
     
       
         

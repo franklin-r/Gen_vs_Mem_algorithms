@@ -2,7 +2,7 @@
 """
 Created on Sun Mar  8 20:46:12 2020
 
-@File			:   Optimisation.py
+@File			:   optimisation.py
 @author         :   Alexis ROSSI <alexis.rossi97@gmail.com>
 @Description 	:	Optimisation techniques for CNN architecture
 @Released		:	
@@ -13,6 +13,7 @@ Created on Sun Mar  8 20:46:12 2020
 import Population as Pop
 import CNN
 from random import sample, shuffle, random, choice
+from time import perf_counter
 
 
 def pop_next_iter(popul, model) :
@@ -72,7 +73,17 @@ def grid_search(popul) :
         popul : an empty population
     \Outputs : None
     """    
-
+    # Data to be written in a csv file
+    data = []
+    
+    # Pareto frontier counter
+    pareto_front_count = 1
+    
+    save_counter = 100
+    
+    # Measure starting time
+    start = perf_counter()
+        
     for NL in popul.NL_set :
         for NF in popul.NF_set :
             for lr in popul.lr_set :
@@ -88,12 +99,29 @@ def grid_search(popul) :
                     model.evaluate_model()
                     
                     # Check if the individual is optimal
-                    pop_next_iter(popul, model)                    
+                    pop_next_iter(popul, model)     
+                    
+                    if save_counter == 100 :
+                        # Save the data to a csv file
+                        data = save_pareto_front(popul, data) 
                     
                 # end for momentum
             # end for lr
         # end for NF
     # end for NL
+    
+    # Measure starting time
+    end = perf_counter()
+    
+    # Column names
+    header = ["N° of Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]        
+    
+    # Add the duration at the end of the first line
+    data[1].insert(len(data[1]), end-start)
+    
+    # Write the data to the csv file
+    write_data_to_csv("grid_search_results.csv", header, data)
+    
 # end grid_search
     
     

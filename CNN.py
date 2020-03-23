@@ -257,9 +257,10 @@ class CNN(nn.Module) :
         # Iterate over batches of data
         for batch, (data, target) in enumerate(train_loader) :
             
-            # Convert data to be uses on GPU
-            #data = data.cuda()  
-            #target = target.cuda()
+            if torch.cuda.is_available() :
+                # Convert data to be uses on GPU
+                data = data.cuda()  
+                target = target.cuda()
             
             # Wrap the input and target output in the 'Variable' wrapper
             data, target = Variable(data), Variable(target)
@@ -314,9 +315,10 @@ class CNN(nn.Module) :
         # Iterate over data
         for data, target in test_loader:
             
-            # Convert data to be uses on GPU
-            #data = data.cuda()  
-            #target = target.cuda()
+            if torch.cuda.is_available() :
+                # Convert data to be uses on GPU
+                data = data.cuda()  
+                target = target.cuda()
             
             # Wrap the input and target output in the 'Variable' wrapper
             data, target = Variable(data), Variable(target)

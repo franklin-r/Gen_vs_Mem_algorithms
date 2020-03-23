@@ -72,21 +72,22 @@ class Population() :
         if indiv_list == [] :
             # Create a random initial populations
             for i in range(0, self.size) :
-                # Append a random individual
-                '''
-                self.pop.append(
-                        CNN.CNN(dataset=self.dataset,
-                                NL=choice(self.NL_set),
-                                NF=choice(self.NF_set),
-                                lr=choice(self.lr_set),
-                                mom=choice(self.mom_set)).cuda())
-                '''
-                self.pop.append(
-                        CNN.CNN(dataset=self.dataset,
-                                NL=choice(self.NL_set),
-                                NF=choice(self.NF_set),
-                                lr=choice(self.lr_set),
-                                mom=choice(self.mom_set)))
+                
+                if torch.cuda.is_available() :
+                    # Append a random individual
+                    self.pop.append(
+                            CNN.CNN(dataset=self.dataset,
+                                    NL=choice(self.NL_set),
+                                    NF=choice(self.NF_set),
+                                    lr=choice(self.lr_set),
+                                    mom=choice(self.mom_set)).cuda())
+                else :
+                    self.pop.append(
+                            CNN.CNN(dataset=self.dataset,
+                                    NL=choice(self.NL_set),
+                                    NF=choice(self.NF_set),
+                                    lr=choice(self.lr_set),
+                                    mom=choice(self.mom_set)))
             # end for i
         # end if indiv_list == []
     # end __init__()    
