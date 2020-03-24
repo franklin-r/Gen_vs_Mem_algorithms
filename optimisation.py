@@ -15,6 +15,8 @@ import CNN
 from random import sample, shuffle, random, choice
 from time import clock
 #from time import perf_counter
+from datetime import datetime
+import utility as ut
 
 
 def pop_next_iter(popul, model) :
@@ -74,13 +76,8 @@ def grid_search(popul) :
         popul : an empty population
     \Outputs : None
     """    
-    # Data to be written in a csv file
-    data = []
-    
-    # Pareto frontier counter
-    pareto_front_count = 1
-    
-    save_counter = 100
+    # Pareto frontiers to be shaped
+    pareto_frontiers = []
     
     # Measure starting time
     #start = perf_counter()
@@ -91,22 +88,32 @@ def grid_search(popul) :
             for lr in popul.lr_set :
                 for mom in popul.mom_set :
                     # Create the individual
-                    model = CNN.CNN(dataset=popul.dataset,
-                                    NL=NL,
-                                    NF=NF,
-                                    lr=lr,
-                                    mom=mom)
+                    if torch.cuda.is_available() :
+                        model = CNN.CNN(dataset=popul.dataset,
+                                        NL=NL,
+                                        NF=NF,
+                                        lr=lr,
+                                        mom=mom).cuda()
+                        
+                    else :
+                        model = CNN.CNN(dataset=popul.dataset,
+                                        NL=NL,
+                                        NF=NF,
+                                        lr=lr,
+                                        mom=mom)
                     
                     # Evaluate the individual
-                    model.evaluate_model()
+                    model.evaluate_model(train_loader=popul.train_loader,
+                                         test_loader=popul.test_loader, 
+                                         epochs=1, 
+                                         train_batch_size=64, 
+                                         test_batch_size=1000)
                     
                     # Check if the individual is optimal
-                    pop_next_iter(popul, model)     
+                    pop_next_iter(popul, model)  
                     
-                    if save_counter == 100 :
-                        # Save the data to a csv file
-                        data = save_pareto_front(popul, data) 
-                    
+                    # Update the Pareto frontiers
+                    pareto_frontiers.append(popul.pop)
                 # end for momentum
             # end for lr
         # end for NF
@@ -117,13 +124,19 @@ def grid_search(popul) :
     end = clock()
 	
     # Column names
-    header = ["N° of Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]        
+    header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
+
+    # Shaped data
+    shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    data[1].insert(len(data[1]), end-start)
+    shaped_data[1].insert(len(data[1]), end-start)
+    
+    # Name of the file is the date and time
+    filename = datetime.now().strftime("./results/grid_search/%d-%m-%Y_%Hh%M.csv")
     
     # Write the data to the csv file
-    write_data_to_csv("grid_search_results.csv", header, data)
+    ut.write_data_to_csv(filename, header, shaped_data)
     
 # end grid_search
     
@@ -142,7 +155,11 @@ def eval_pop(popul) :
 
     # Evaluation of the current population
     for model in popul.pop :
-        model.evaluate_model()
+        model.evaluate_model(train_loader=popul.train_loader,
+                             test_loader=popul.test_loader, 
+                             epochs=1, 
+                             train_batch_size=64, 
+                             test_batch_size=1000)
         inaccuracies.append(model.inaccuracy)       # Add the inaccuracy of each model to the list
         times.append(model.time)                    # Add the time of each model to the list
     # end for model
@@ -166,7 +183,7 @@ def selection(popul, nb_best) :
     \Description : Select the best individuals of a population as well as randopm individuals from the rest of the population
     \Args : 
         popul   : the population of individual to evolve
-        nb_best : number of best individuals to select (must be a even to ensure that ((popul.size // 2) - nb_best) 
+        nb_best : number of best individuals to select (must be even to ensure that ((popul.size // 2) - nb_best) 
                     is a multiple of 4)
     \Outputs : 
         pop_next : The population of next generation
@@ -227,11 +244,19 @@ def crossover(pop_next) :
                          [couple[1].chromosome.get(val) for val in genes[genes.index(cut_gene):]]
         
         # Create the child from the new genes
-        children.append(CNN.CNN(dataset=pop_next.dataset, 
-                                NL=child_gene[0],            
-                                NF=child_gene[1], 
-                                lr=child_gene[2], 
-                                mom=child_gene[3]))
+        if torch.cuda.is_available() :
+            children.append(CNN.CNN(dataset=pop_next.dataset, 
+                                    NL=child_gene[0],            
+                                    NF=child_gene[1], 
+                                    lr=child_gene[2], 
+                                    mom=child_gene[3]).cuda())
+            
+        else :
+            children.append(CNN.CNN(dataset=pop_next.dataset, 
+                                    NL=child_gene[0],            
+                                    NF=child_gene[1], 
+                                    lr=child_gene[2], 
+                                    mom=child_gene[3]))
     # end for couple
     
     # Create the corresponding population
@@ -349,6 +374,11 @@ def gen_algo(popul, gen_max, nb_best, pm) :
         pm      : probability for an individual to mutate
     \Outputs : None
     """
+    # Pareto front of each generation
+    pareto_frontiers = []
+    
+    # Measure starting time
+    start = clock()
     
     for gen in range(0, gen_max) :
         
@@ -367,7 +397,29 @@ def gen_algo(popul, gen_max, nb_best, pm) :
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
+        
+        # Extract the current Pareto frontier and update the Pareto frontiers
+        pareto_frontiers.append(pareto_front(popul)) 
     # end for gen
+    
+    # Measure ending time
+    end = clock()
+    
+    # Column names
+    header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
+
+    # Shaped data
+    shaped_data = ut.shape_pareto_front(pareto_frontiers)
+    
+    # Add the duration at the end of the first line
+    shaped_data[1].insert(len(data[1]), end-start)
+    
+    # Name of the file is the date and time
+    filename = datetime.now().strftime("./results/gen_algo/%d-%m-%Y_%Hh%M.csv")
+    
+    # Write the data to the csv file
+    ut.write_data_to_csv(filename, header, shaped_data)
+    
 # end gen_algo()
     
 
@@ -381,9 +433,9 @@ def local_search(popul, radius, nb_neighb) :
         nb_neighb   : number of neighbours to test in the radius
     \Outputs : None
     \Notes : 
-        In the case we do not the individuals before the local search, we might start to perform local search on "average"
-        individual and replace them with fitter individuals. The probleme lays in the case where the former were in the 
-        radius of a optimizable individual.
+        In the case we do not sort the individuals before the local search, we might start to perform local search on 
+        "average" individual and replace them with fitter individuals. The probleme lays in the case where the former were in 
+        the radius of a optimizable individual.
         After the local search on the "average" individual, it disappears from the radius 
         of an optimizable individual and therefore the latter cannot be optimized anymore.
         The current implementation does not take into account this and a future feature could be added to sort the individuals
@@ -445,6 +497,11 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
         nb_neighb   : number of neighbours to test in the radius during the local search
     \Outputs : None
     """
+    # Pareto front of each generation
+    pareto_frontiers = []
+    
+    # Measure starting time
+    start = clock()
     
     for gen in range(0, gen_max) :
         
@@ -466,7 +523,29 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
+        
+        # Extract the current Pareto frontier and update the Pareto frontiers
+        pareto_frontiers.append(pareto_front(popul)) 
     # end for gen
+    
+    # Measure ending time
+    end = clock()
+    
+    # Column names
+    header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
+
+    # Shaped data
+    shaped_data = ut.shape_pareto_front(pareto_frontiers)
+    
+    # Add the duration at the end of the first line
+    shaped_data[1].insert(len(data[1]), end-start)
+    
+    # Name of the file is the date and time
+    filename = datetime.now().strftime("./results/gen_algo/%d-%m-%Y_%Hh%M.csv")
+    
+    # Write the data to the csv file
+    ut.write_data_to_csv(filename, header, shaped_data)
+    
 # end gen_algo()
     
     

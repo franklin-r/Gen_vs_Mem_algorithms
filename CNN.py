@@ -30,10 +30,11 @@ class CNN(nn.Module) :
             NF  : number of feature maps
             lr  : learning rate
             mom : momentum
-        layers      : list of layers
-        inaccuracy  : inaccuracy of the model during the test phase
-        time        : computation time during the test phase
-        fitness     : fitness score of the model
+        layers          : list of layers
+        inaccuracy      : inaccuracy of the model during the test phase
+        time            : computation time during the test phase
+        fitness         : fitness score of the model
+        feat_maps_seq   : list of the sizes of feature maps
     """
     def __init__(self, dataset, NL, NF, lr, mom) :
         """
@@ -81,10 +82,10 @@ class CNN(nn.Module) :
          
         
         # Determine the feature maps subsequence from {32, 64, 128, 256, 512}
-        feat_maps_seq = [32, 64, 128, 256, 512]
-        start = randint(0, len(feat_maps_seq) - self.chromosome["NF"])
+        self.feat_maps_seq = [32, 64, 128, 256, 512]
+        start = randint(0, len(self.feat_maps_seq) - self.chromosome["NF"])
         end = start + NF
-        feat_maps_seq = feat_maps_seq[start : end]
+        self.feat_maps_seq = self.feat_maps_seq[start : end]
         ind_feat_maps = 0
         
         classes    = 10            # Number of classes
@@ -120,8 +121,8 @@ class CNN(nn.Module) :
                 conv_block_size = choice([2, 3, 4])
                  
             # Select the feature maps size
-            feat_maps = feat_maps_seq[ind_feat_maps] if ind_feat_maps < len(feat_maps_seq) \
-                                                        else feat_maps_seq[len(feat_maps_seq) - 1]
+            feat_maps = self.feat_maps_seq[ind_feat_maps] if ind_feat_maps < len(self.feat_maps_seq) \
+                                                            else self.feat_maps_seq[len(self.feat_maps_seq) - 1]
             ind_feat_maps += 1
             
             # Add a convolutional block
@@ -215,7 +216,7 @@ class CNN(nn.Module) :
         """
         print("CNN")
         print("Number of hidden layers : {}".format(self.chromosome["NL"]))
-        print("Number of feature maps : {}".format(self.chromosome["NF"]))
+        print("Feature maps : {}".format(self.feat_maps_seq))
         print("Learning rate : {}".format(self.chromosome["lr"]))
         print("Momentum : {}".format(self.chromosome["mom"]))
         
@@ -260,8 +261,8 @@ class CNN(nn.Module) :
         # Iterate over batches of data
         for batch, (data, target) in enumerate(train_loader) :
             
+            # Convert data to be used on GPU
             if torch.cuda.is_available() :
-                # Convert data to be uses on GPU
                 data = data.cuda()  
                 target = target.cuda()
             
@@ -319,8 +320,8 @@ class CNN(nn.Module) :
         # Iterate over data
         for data, target in test_loader:
             
+            # Convert data to be used on GPU
             if torch.cuda.is_available() :
-                # Convert data to be uses on GPU
                 data = data.cuda()  
                 target = target.cuda()
             
@@ -359,7 +360,7 @@ class CNN(nn.Module) :
 
     # Function to evaluate the model
     # Inspired from : https://www.kaggle.com/vincentman0403/pytorch-v0-3-1b-on-mnist-by-lenet (consulted on 07/03/2020)
-    def evaluate_model(self, train_loader, test_loader, epochs=10, train_batch_size=64, test_batch_size=1000):
+    def evaluate_model(self, train_loader, test_loader, epochs=10, train_batch_size=64, test_batch_size=1000) :
         """
         \Description : Evaluate the model
         \Args : 

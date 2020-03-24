@@ -73,8 +73,8 @@ class Population() :
             # Create a random initial populations
             for i in range(0, self.size) :
                 
+                # Append a random individual
                 if torch.cuda.is_available() :
-                    # Append a random individual
                     self.pop.append(
                             CNN.CNN(dataset=self.dataset,
                                     NL=choice(self.NL_set),

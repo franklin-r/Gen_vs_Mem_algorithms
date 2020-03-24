@@ -13,29 +13,46 @@ Created on Tue Mar 17 18:56:39 2020
 import csv
 
 # TO DO
-def save_pareto_front(popul, data) :
+def shape_pareto_front(pareto_frontiers) :
+    """
+    \Description: Shape the pareto front to save it in a .csv file
+    \Args : 
+        pareto_frontiers    : matrix containing the Pareto-optimal individuals of each iteration to shape
+    \Outputs : 
+        shaped_data : the data shaped for .csv file
+    """ 
+    # Tha data shaped to be written in .csv file afterward
+    shaped_data = []
     
-    # Iterate through the whole population
-    for model in popul.pop :
-        # Save the data of the current model in the Pareto frontier
-        model_results = [len(data)+1, model.inaccuracy, model.time, model.NL, model.NF, model.lr, model.mom]
+    # Iterate through the whole Pareto frontier
+    for i in range(0, len(pareto_frontiers)) :
+        for model in pareto_frontiers[i] :
+            # Save the data of the current model in the Pareto frontier
+            shaped_data.append(
+                    [i + 1, 
+                     model.inaccuracy, 
+                     model.time, 
+                     model.chromosome["NL"], 
+                     model.feat_maps_seq, 
+                     model.chromosome["lr"], 
+                     model.chromosome["mom"]])
+        # end for model
         
-        data.append(model_results)
-    # end for model
+        # Append a separation between each Pareto frontier
+        shaped_data.append(["XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX"])
+    # end for it
     
-    # Append a separation between each Pareto frontier
-    data.append(["XXX", "XXX", "XXX", "XXX", "XXX", "XXX"])
-    
-# end save_pareto_front()
+    return shaped_data
+# end shape_pareto_front()
 
 
 def write_data_to_csv(filename, header, data) :
     """
-    \Description: Write the data corresponding to header in a csv file called filename
+    \Description: Write the data corresponding to header in a .csv file called filename
     \Args : 
         filename    : the name of the file
-        header      : a list containing the name if the columns
-        data        : a matrix containinf the data
+        header      : a list containing the name of the columns
+        data        : a matrix containing the data
     \Outputs : None
     """ 
     row_list = [header] + data
@@ -43,3 +60,4 @@ def write_data_to_csv(filename, header, data) :
     with open(filename, 'a', newline='') as file :
         writer = csv.writer(file)
         writer.writerows(row_list)
+# end write_data_to_csv()
