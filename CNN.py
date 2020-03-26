@@ -245,32 +245,32 @@ class CNN(nn.Module) :
                     
         elif standard_out == "file" :
             with open(filename, 'a', newline='') as file :
-                file.write("CNN")
-                file.write("Number of hidden layers : {}".format(self.chromosome["NL"]))
-                file.write("Feature maps : {}".format(self.feat_maps_seq))
-                file.write("Learning rate : {}".format(self.chromosome["lr"]))
-                file.write("Momentum : {}".format(self.chromosome["mom"]))
+                file.write("CNN\n")
+                file.write("Number of hidden layers : {}\n".format(self.chromosome["NL"]))
+                file.write("Feature maps : {}\n".format(self.feat_maps_seq))
+                file.write("Learning rate : {}\n".format(self.chromosome["lr"]))
+                file.write("Momentum : {}\n".format(self.chromosome["mom"]))
                 
-                file.write("Architecture :")
+                file.write("Architecture :\n")
                 for i in range(len(self.layers)) :
-                    file.write(type(self.layers[i]).__name__)
+                    file.write("{}\n".format(type(self.layers[i]).__name__))
                     
                     if type(self.layers[i]).__name__ == "Conv2d" :
-                        file.write("\tin_channels = {}".format(self.layers[i].in_channels))
-                        file.write("\tout_channels = {}".format(self.layers[i].out_channels))
-                        file.write("\tkernel_size = {}".format(self.layers[i].kernel_size))
-                        file.write("\tstride = {}".format(self.layers[i].stride))
+                        file.write("\tin_channels = {}\n".format(self.layers[i].in_channels))
+                        file.write("\tout_channels = {}\n".format(self.layers[i].out_channels))
+                        file.write("\tkernel_size = {}\n".format(self.layers[i].kernel_size))
+                        file.write("\tstride = {}\n".format(self.layers[i].stride))
                         
                     elif type(self.layers[i]).__name__ == "MaxPool2d" or type(self.layers[i]).__name__ == "AvgPool2d" :
-                        file.write("\tkernel_size = {}".format(self.layers[i].kernel_size))
-                        file.write("\tstride = {}".format(self.layers[i].stride))
+                        file.write("\tkernel_size = {}\n".format(self.layers[i].kernel_size))
+                        file.write("\tstride = {}\n".format(self.layers[i].stride))
         
                     elif type(self.layers[i]).__name__ == "Linear" :
-                        file.write("\tin_features = {}".format(self.layers[i].in_features))
-                        file.write("\tout_features = {}".format(self.layers[i].out_features))
+                        file.write("\tin_features = {}\n".format(self.layers[i].in_features))
+                        file.write("\tout_features = {}\n".format(self.layers[i].out_features))
                     # end if
                 # end for i
-                file.write("")
+                file.write("\n")
             # end with
             
         else :

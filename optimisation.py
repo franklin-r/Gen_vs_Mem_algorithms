@@ -136,9 +136,12 @@ def grid_search(popul) :
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)
     
+    # Name of the file is the date and time
+    filename = datetime.now().strftime("./results/grid_search/%d-%m-%Y_%Hh%M.txt")
+
     # Save the best models' caracteristics
     for model in pareto_frontiers[len(pareto_frontiers) - 1] :
-        model.printCNN(standard_out="file", filename="./results/grid_search/%d-%m-%Y_%Hh%M.txt")
+        model.printCNN(standard_out="file", filename=filename)
     
 # end grid_search
     
@@ -182,7 +185,7 @@ def eval_pop(popul) :
     
 def selection(popul, nb_best) :
     """
-    \Description : Select the best individuals of a population as well as randopm individuals from the rest of the population
+    \Description : Select the best individuals of a population as well as random individuals from the rest of the population
     \Args : 
         popul   : the population of individual to evolve
         nb_best : number of best individuals to select (must be even to ensure that ((popul.size // 2) - nb_best) 
@@ -208,7 +211,7 @@ def selection(popul, nb_best) :
                               train_loader=popul.train_loader,
                               test_loader=popul.test_loader,
                               train_batch_size=popul.train_batch_size,
-                              test_bach_size=popul.test_batch_size)
+                              test_batch_size=popul.test_batch_size)
     
     return pop_next
 # end selection()
@@ -227,7 +230,7 @@ def crossover(pop_next) :
     shuffle(pop_next.pop)            
     
     # Create the couples
-    couples = [pop_next.pop[i*2 : (i+1)*2] for i in (len(pop_next.pop) // 2)]   
+    couples = [pop_next.pop[i*2 : (i+1)*2] for i in range(0, len(pop_next.pop) // 2)]   
 
     children = []          # Contains the children     
     
@@ -272,7 +275,7 @@ def crossover(pop_next) :
                                train_loader=pop_next.train_loader,
                                test_loader=pop_next.test_loader,
                                train_batch_size=pop_next.train_batch_size,
-                               test_bach_size=pop_next.test_batch_size)
+                               test_batch_size=pop_next.test_batch_size)
      
     return pop_child
 # end crossover()
@@ -421,10 +424,13 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)
+   
+    # Name of the file is the date and time
+    filename = datetime.now().strftime("./results/gen_algo/%d-%m-%Y_%Hh%M.txt")
     
     # Save the best models' caracteristics
     for model in pareto_frontiers[len(pareto_frontiers) - 1] :
-        model.printCNN(standard_out="file", filename="./results/gen_algo/%d-%m-%Y_%Hh%M.txt")
+        model.printCNN(standard_out="file", filename=filename)
     
 # end gen_algo()
     
@@ -552,9 +558,12 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)
     
+    # Name of the file is the date and time
+    filename = datetime.now().strftime("./results/mem_algo/%d-%m-%Y_%Hh%M/txt")
+
     # Save the best models' caracteristics
     for model in pareto_frontiers[len(pareto_frontiers) - 1] :
-        model.printCNN(standard_out="file", filename="./results/mem_algo/%d-%m-%Y_%Hh%M.txt")
+        model.printCNN(standard_out="file", filename=filename)
     
 # end gen_algo()
     
