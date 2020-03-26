@@ -46,7 +46,7 @@ if __name__ == "__main__" :
     opt.grid_search(curr_pop)
     
     
-    
+    '''
     # --------------------- GENETIC ALGORITHM SCENARIO --------------------- #
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 
@@ -79,7 +79,7 @@ if __name__ == "__main__" :
     opt.mem_algo(popul=curr_pop, gen_max=10, nb_best=2, pm=0.25)
     
     
-    
+    '''
     '''
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 

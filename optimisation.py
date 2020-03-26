@@ -423,14 +423,14 @@ def gen_algo(popul, gen_max, nb_best, pm) :
 
 def local_search(popul, radius, nb_neighb) :    
     """
-    \Description : Apply a local search algorithm to an individual of population
-    \Args : 
+    Description : Apply a local search algorithm to an individual of population
+    Args : 
         popul       : the population of individual to evolve
         model       : the starting model
         radius      : the radius in which to search for the solution
         nb_neighb   : number of neighbours to test in the radius
-    \Outputs : None
-    \Notes : 
+    Outputs : None
+    Notes : 
         In the case we do not sort the individuals before the local search, we might start to perform local search on 
         "average" individual and replace them with fitter individuals. The probleme lays in the case where the former were in 
         the radius of a optimizable individual.
