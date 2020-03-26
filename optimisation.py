@@ -10,11 +10,11 @@ Created on Sun Mar  8 20:46:12 2020
     
 """
 
+import torch
 import Population as Pop
 import CNN
 from random import sample, shuffle, random, choice
-from time import clock
-#from time import perf_counter
+from time import perf_counter
 from datetime import datetime
 import utility as ut
 
@@ -80,8 +80,7 @@ def grid_search(popul) :
     pareto_frontiers = []
     
     # Measure starting time
-    #start = perf_counter()
-    start = clock()
+    start = perf_counter()
     
     for NL in popul.NL_set :
         for NF in popul.NF_set :
@@ -120,8 +119,7 @@ def grid_search(popul) :
     # end for NL
     
     # Measure starting time
-    #end = perf_counter()
-    end = clock()
+    end = perf_counter()
 	
     # Column names
     header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
@@ -130,7 +128,7 @@ def grid_search(popul) :
     shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    shaped_data[1].insert(len(data[1]), end-start)
+    shaped_data[1].insert(len(shaped_data[1]), end-start)
     
     # Name of the file is the date and time
     filename = datetime.now().strftime("./results/grid_search/%d-%m-%Y_%Hh%M.csv")
@@ -412,7 +410,7 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    shaped_data[1].insert(len(data[1]), end-start)
+    shaped_data[1].insert(len(shaped_data[1]), end-start)
     
     # Name of the file is the date and time
     filename = datetime.now().strftime("./results/gen_algo/%d-%m-%Y_%Hh%M.csv")
@@ -538,10 +536,10 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    shaped_data[1].insert(len(data[1]), end-start)
+    shaped_data[1].insert(len(shaped_data[1]), end-start)
     
     # Name of the file is the date and time
-    filename = datetime.now().strftime("./results/gen_algo/%d-%m-%Y_%Hh%M.csv")
+    filename = datetime.now().strftime("./results/mem_algo/%d-%m-%Y_%Hh%M.csv")
     
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)

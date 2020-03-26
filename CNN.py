@@ -15,11 +15,10 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
 from random import choice, randint
-from time import clock
-#from time import perf_counter
+from time import perf_counter
 
 
-# Define the CNN
+# Define the CNNpe
 class CNN(nn.Module) :
     """
     \Description : CNN architecture
@@ -314,8 +313,7 @@ class CNN(nn.Module) :
         loss_func = torch.nn.CrossEntropyLoss(reduction="sum")
     
         # Measure starting time
-        #start = perf_counter()
-        start = clock()
+        start = perf_counter()
         
         # Iterate over data
         for data, target in test_loader:
@@ -341,8 +339,7 @@ class CNN(nn.Module) :
             correct = correct + torch.eq(pred, target.data).sum()
     
         # Measure ending time
-        #end = perf_counter()
-        end = clock()
+        end = perf_counter()
         
         test_loss /= len(test_loader.dataset)
         self.inaccuracy = 100 - (100. * correct / len(test_loader.dataset))     # Inaccuracy of the model
