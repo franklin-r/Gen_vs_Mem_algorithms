@@ -37,9 +37,6 @@ def shape_pareto_front(pareto_frontiers) :
                      model.chromosome["lr"], 
                      model.chromosome["mom"]])
         # end for model
-        
-        # Append a separation between each Pareto frontier
-        shaped_data.append(["XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX"])
     # end for it
     
     return shaped_data

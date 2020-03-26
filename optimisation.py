@@ -122,19 +122,23 @@ def grid_search(popul) :
     end = perf_counter()
 	
     # Column names
-    header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
+    header = ["Pareto Frontier", "Inaccuracy (%)", "Time (s)", "NL", "NF", "lr", "mom", "Duration (s)"]  
 
     # Shaped data
     shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    shaped_data[1].insert(len(shaped_data[1]), end-start)
+    shaped_data[0].insert(len(shaped_data[1]), end-start)
     
     # Name of the file is the date and time
     filename = datetime.now().strftime("./results/grid_search/%d-%m-%Y_%Hh%M.csv")
     
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)
+    
+    # Save the best models' caracteristics
+    for model in pareto_frontiers[len(pareto_frontiers) - 1] :
+        model.printCNN(standard_out="file", filename="./results/grid_search/%d-%m-%Y_%Hh%M.txt")
     
 # end grid_search
     
@@ -376,7 +380,7 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     pareto_frontiers = []
     
     # Measure starting time
-    start = clock()
+    start = perf_counter()
     
     for gen in range(0, gen_max) :
         
@@ -401,22 +405,26 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     # end for gen
     
     # Measure ending time
-    end = clock()
+    end = perf_counter()
     
     # Column names
-    header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
+    header = ["Pareto Frontier", "Inaccuracy (%)", "Time (s)", "NL", "NF", "lr", "mom", "Duration (s)"]  
 
     # Shaped data
     shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    shaped_data[1].insert(len(shaped_data[1]), end-start)
+    shaped_data[0].insert(len(shaped_data[1]), end-start)
     
     # Name of the file is the date and time
     filename = datetime.now().strftime("./results/gen_algo/%d-%m-%Y_%Hh%M.csv")
     
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)
+    
+    # Save the best models' caracteristics
+    for model in pareto_frontiers[len(pareto_frontiers) - 1] :
+        model.printCNN(standard_out="file", filename="./results/gen_algo/%d-%m-%Y_%Hh%M.txt")
     
 # end gen_algo()
     
@@ -499,7 +507,7 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     pareto_frontiers = []
     
     # Measure starting time
-    start = clock()
+    start = perf_counter()
     
     for gen in range(0, gen_max) :
         
@@ -527,22 +535,26 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     # end for gen
     
     # Measure ending time
-    end = clock()
+    end = perf_counter()
     
     # Column names
-    header = ["Pareto Frontier", "Inaccuracy", "Time", "NL", "NF", "lr", "mom", "Duration"]  
+    header = ["Pareto Frontier", "Inaccuracy (%)", "Time (s)", "NL", "NF", "lr", "mom", "Duration (s)"]  
 
     # Shaped data
     shaped_data = ut.shape_pareto_front(pareto_frontiers)
     
     # Add the duration at the end of the first line
-    shaped_data[1].insert(len(shaped_data[1]), end-start)
+    shaped_data[0].insert(len(shaped_data[1]), end-start)
     
     # Name of the file is the date and time
     filename = datetime.now().strftime("./results/mem_algo/%d-%m-%Y_%Hh%M.csv")
     
     # Write the data to the csv file
     ut.write_data_to_csv(filename, header, shaped_data)
+    
+    # Save the best models' caracteristics
+    for model in pareto_frontiers[len(pareto_frontiers) - 1] :
+        model.printCNN(standard_out="file", filename="./results/mem_algo/%d-%m-%Y_%Hh%M.txt")
     
 # end gen_algo()
     

@@ -207,35 +207,75 @@ class CNN(nn.Module) :
     # end forward()      
     
     # Print the CNN
-    def printCNN(self) :
+    def printCNN(self, standard_out, filename) :
         """
-        \Description : Print the CNN's info
-        \Args : None
+        \Description : Print the CNN's info in the console if standard_out="console" or in a .txt file if standard_out="file"
+        \Args : 
+            standard_out    : the standard output where to print the info
+            filename        : the name of file if we write in a file
         \Outputs : None
         """
-        print("CNN")
-        print("Number of hidden layers : {}".format(self.chromosome["NL"]))
-        print("Feature maps : {}".format(self.feat_maps_seq))
-        print("Learning rate : {}".format(self.chromosome["lr"]))
-        print("Momentum : {}".format(self.chromosome["mom"]))
         
-        print("Architecture :")
-        for i in range(len(self.layers)) :
-            print(type(self.layers[i]).__name__)
+        if standard_out == "console" :
+            print("Number of hidden layers : {}".format(self.chromosome["NL"]))
+            print("Feature maps : {}".format(self.feat_maps_seq))
+            print("Learning rate : {}".format(self.chromosome["lr"]))
+            print("Momentum : {}".format(self.chromosome["mom"]))
             
-            if type(self.layers[i]).__name__ == "Conv2d" :
-                print("\tin_channels = {}".format(self.layers[i].in_channels))
-                print("\tout_channels = {}".format(self.layers[i].out_channels))
-                print("\tkernel_size = {}".format(self.layers[i].kernel_size))
-                print("\tstride = {}".format(self.layers[i].stride))
+            print("Architecture :")
+            for i in range(len(self.layers)) :
+                print(type(self.layers[i]).__name__)
                 
-            elif type(self.layers[i]).__name__ == "MaxPool2d" or type(self.layers[i]).__name__ == "AvgPool2d" :
-                print("\tkernel_size = {}".format(self.layers[i].kernel_size))
-                print("\tstride = {}".format(self.layers[i].stride))
-
-            elif type(self.layers[i]).__name__ == "Linear" :
-                print("\tin_features = {}".format(self.layers[i].in_features))
-                print("\tout_features = {}".format(self.layers[i].out_features))
+                if type(self.layers[i]).__name__ == "Conv2d" :
+                    print("\tin_channels = {}".format(self.layers[i].in_channels))
+                    print("\tout_channels = {}".format(self.layers[i].out_channels))
+                    print("\tkernel_size = {}".format(self.layers[i].kernel_size))
+                    print("\tstride = {}".format(self.layers[i].stride))
+                    
+                elif type(self.layers[i]).__name__ == "MaxPool2d" or type(self.layers[i]).__name__ == "AvgPool2d" :
+                    print("\tkernel_size = {}".format(self.layers[i].kernel_size))
+                    print("\tstride = {}".format(self.layers[i].stride))
+    
+                elif type(self.layers[i]).__name__ == "Linear" :
+                    print("\tin_features = {}".format(self.layers[i].in_features))
+                    print("\tout_features = {}".format(self.layers[i].out_features))
+                # end if
+            # end for i
+            print("")
+                    
+        elif standard_out == "file" :
+            with open(filename, 'a', newline='') as file :
+                file.write("CNN")
+                file.write("Number of hidden layers : {}".format(self.chromosome["NL"]))
+                file.write("Feature maps : {}".format(self.feat_maps_seq))
+                file.write("Learning rate : {}".format(self.chromosome["lr"]))
+                file.write("Momentum : {}".format(self.chromosome["mom"]))
+                
+                file.write("Architecture :")
+                for i in range(len(self.layers)) :
+                    file.write(type(self.layers[i]).__name__)
+                    
+                    if type(self.layers[i]).__name__ == "Conv2d" :
+                        file.write("\tin_channels = {}".format(self.layers[i].in_channels))
+                        file.write("\tout_channels = {}".format(self.layers[i].out_channels))
+                        file.write("\tkernel_size = {}".format(self.layers[i].kernel_size))
+                        file.write("\tstride = {}".format(self.layers[i].stride))
+                        
+                    elif type(self.layers[i]).__name__ == "MaxPool2d" or type(self.layers[i]).__name__ == "AvgPool2d" :
+                        file.write("\tkernel_size = {}".format(self.layers[i].kernel_size))
+                        file.write("\tstride = {}".format(self.layers[i].stride))
+        
+                    elif type(self.layers[i]).__name__ == "Linear" :
+                        file.write("\tin_features = {}".format(self.layers[i].in_features))
+                        file.write("\tout_features = {}".format(self.layers[i].out_features))
+                    # end if
+                # end for i
+                file.write("")
+            # end with
+            
+        else :
+            print("Invalid parameter 'standard_out'. Choose 'console' or 'file'")
+        # end if
     # end printCNN
                 
                 
@@ -288,6 +328,8 @@ class CNN(nn.Module) :
                         epoch, batch * len(data), len(train_loader.dataset),
                         100. * batch / len(train_loader),
                         loss.data))
+            # end if
+        # end for
     # end train_model()
 
 
@@ -312,9 +354,6 @@ class CNN(nn.Module) :
         # Define loss function
         loss_func = torch.nn.CrossEntropyLoss(reduction="sum")
     
-        # Measure starting time
-        start = perf_counter()
-        
         # Iterate over data
         for data, target in test_loader:
             
@@ -337,21 +376,17 @@ class CNN(nn.Module) :
     
             # If correct, increment correct prediction accumulator
             correct = correct + torch.eq(pred, target.data).sum()
+        # end for
     
-        # Measure ending time
-        end = perf_counter()
-        
         test_loss /= len(test_loader.dataset)
         self.inaccuracy = 100 - (100. * correct / len(test_loader.dataset))     # Inaccuracy of the model
-        self.time = end - start                                                 # Time elapsed for the test
         
         # Print log
-        print('\nTest set, Epoch {} , Average loss: {:.4f}, Inaccuracy: {}/{} ({:.2f}%) in {:.3f}s\n'.format(epoch,
+        print('\nTest set, Epoch {} , Average loss: {:.4f}, Inaccuracy: {}/{} ({:.2f}%)\n'.format(epoch,
               test_loss, 
               len(test_loader.dataset) - correct, 
               len(test_loader.dataset),
-              self.inaccuracy,
-              self.time))   
+              self.inaccuracy))   
     # end test_model()
 
 
@@ -375,6 +410,10 @@ class CNN(nn.Module) :
         
         # Evaluation of the individual
         log_interval = 100
+        
+        # Measure starting time
+        start = perf_counter()
+        
         for epoch in range(1, epochs + 1) :
             # Training phase
             self.train_model(optimizer, epoch, train_loader, log_interval=log_interval)
@@ -382,6 +421,16 @@ class CNN(nn.Module) :
             # Testing phase
             self.test_model(epoch, test_loader)
         # end for epoch
+        
+        # Measure ending time
+        end = perf_counter()
+        
+        # Time elapsed for the whole procedure
+        self.time = end - start
+        
+        # Print results
+        print("RESULTS : {:.2f}% inaccuracy in {:.2f}s".format(self.inaccuracy, self.time))
+        
     # end evaluate_model()
     
 # end class CNN
