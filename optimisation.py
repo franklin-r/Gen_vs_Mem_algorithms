@@ -438,7 +438,7 @@ def local_search(popul, radius, nb_neighb) :
         of an optimizable individual and therefore the latter cannot be optimized anymore.
         The current implementation does not take into account this and a future feature could be added to sort the individuals
         into successive Pareto frontier beforehand if the density of the individuals is to high and such a feature could 
-        improve the results. Then we could perform the local search starting from the least fit Pareto frontier.            
+        improve the results. Then we could perform the local search starting from the least fit Pareto frontier            
     """
     # New population after local search
     new_pop = []
