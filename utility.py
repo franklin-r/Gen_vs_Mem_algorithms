@@ -30,7 +30,7 @@ def shape_pareto_front(pareto_frontiers) :
             # Save the data of the current model in the Pareto frontier
             shaped_data.append(
                     [i + 1, 
-                     model.inaccuracy, 
+                     model.inaccuracy.item(), 
                      model.time, 
                      model.chromosome["NL"], 
                      model.feat_maps_seq, 
