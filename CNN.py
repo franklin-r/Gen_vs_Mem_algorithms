@@ -151,6 +151,10 @@ class CNN(nn.Module) :
                                           stride=1))
                     # end if
                 # end if
+
+                #Initiliaze the weights and bias
+                self.layers[len(self.layers) - 1].weight.data.fill_(0.01)
+                self.layers[len(self.layers) - 1].bias.data.fill_(0.01)
                 
                 # Update the height and width
                 img_h = (img_h - self.layers[len(self.layers) - 1].kernel_size[0]) + 1      # Not divided by the stride because it is 1
@@ -245,7 +249,6 @@ class CNN(nn.Module) :
                     
         elif standard_out == "file" :
             with open(filename, 'a', newline='') as file :
-                file.write("CNN\n")
                 file.write("Number of hidden layers : {}\n".format(self.chromosome["NL"]))
                 file.write("Feature maps : {}\n".format(self.feat_maps_seq))
                 file.write("Learning rate : {}\n".format(self.chromosome["lr"]))

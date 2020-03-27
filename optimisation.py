@@ -69,11 +69,12 @@ def pop_next_iter(popul, model) :
 
 # Grid search optimisation for optimal number of layer, number of feature maps, 
 # learning rate and momentum
-def grid_search(popul) :
+def grid_search(popul, epochs) :
     """
     \Description: Test all the possible combinations of hyper-parameters and find the best
     \Args : 
-        popul : an empty population
+        popul   : an empty population
+        epochs  : number of epochs
     \Outputs : None
     """    
     # Pareto frontiers to be shaped
@@ -104,7 +105,7 @@ def grid_search(popul) :
                     # Evaluate the individual
                     model.evaluate_model(train_loader=popul.train_loader,
                                          test_loader=popul.test_loader, 
-                                         epochs=1, 
+                                         epochs=epochs, 
                                          train_batch_size=64, 
                                          test_batch_size=1000)
                     
@@ -147,12 +148,12 @@ def grid_search(popul) :
     
     
     
-def eval_pop(popul) :
+def eval_pop(popul, epochs) :
     """
     \Description : Evaluate the current population
     \Args : 
         popul   : the population of individual to evaluate
-        nb_best : number of best individuals to select for crossover 
+        epochs  : number of epochs
     \Outputs : None
     """
     inaccuracies = []                       #List containing the inaccuracy attributes of each model
@@ -162,7 +163,7 @@ def eval_pop(popul) :
     for model in popul.pop :
         model.evaluate_model(train_loader=popul.train_loader,
                              test_loader=popul.test_loader, 
-                             epochs=1, 
+                             epochs=epochs, 
                              train_batch_size=64, 
                              test_batch_size=1000)
         inaccuracies.append(model.inaccuracy)       # Add the inaccuracy of each model to the list
@@ -245,28 +246,43 @@ def crossover(pop_next) :
         # Before this gene, the child heritates from parent 1's genes, after from parent 2's
         cut_gene = choice(genes)
         
-        child_gene = [couple[0].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
+        child1_gene = [couple[0].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
                          [couple[1].chromosome.get(val) for val in genes[genes.index(cut_gene):]]
         
+        child2_gene = [couple[1].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
+                        [couple[0].chromosome.get(val) for val in genes[genes.index(cut_gene):]]   
+
         # Create the child from the new genes
         if torch.cuda.is_available() :
             children.append(CNN.CNN(dataset=pop_next.dataset, 
-                                    NL=child_gene[0],            
-                                    NF=child_gene[1], 
-                                    lr=child_gene[2], 
-                                    mom=child_gene[3]).cuda())
+                                    NL=child1_gene[0],            
+                                    NF=child1_gene[1], 
+                                    lr=child1_gene[2], 
+                                    mom=child1_gene[3]).cuda())
+
+            children.append(CNN.CNN(dataset=pop_next.dataset,
+                                    NL=child2_gene[0],
+                                    NF=child2_gene[1],
+                                    lr=child2_gene[2],
+                                    mom=child2_gene[3]).cuda())
             
         else :
             children.append(CNN.CNN(dataset=pop_next.dataset, 
-                                    NL=child_gene[0],            
-                                    NF=child_gene[1], 
-                                    lr=child_gene[2], 
-                                    mom=child_gene[3]))
+                                    NL=child1_gene[0],            
+                                    NF=child1_gene[1], 
+                                    lr=child1_gene[2], 
+                                    mom=child1_gene[3]))
+
+            children.append(CNN.CNN(dataset=pop_next.dataset,
+                                    NL=child2_gene[0],
+                                    NF=child2_gene[1],
+                                    lr=child2_gene[2],
+                                    mom=child2_gene[3]))
     # end for couple
     
     # Create the corresponding population
     pop_child = Pop.Population(dataset=pop_next.dataset, 
-                               size=pop_next.size, 
+                               size=len(children), 
                                NL_set=pop_next.NL_set, 
                                NF_set=pop_next.NF_set,
                                lr_set=pop_next.lr_set, 
@@ -369,11 +385,12 @@ def pareto_front(popul) :
 # end pareto_front()
     
   
-def gen_algo(popul, gen_max, nb_best, pm) :
+def gen_algo(popul, epochs,  gen_max, nb_best, pm) :
     """
     \Description : Apply a genetic algorithm to a population
     \Args : 
         popul   : the population of individual to evolve
+        epochs  : number of epochs
         gen_max : max number of generations
         nb_best : number of best individuals to select for crossover 
         pm      : probability for an individual to mutate
@@ -385,11 +402,13 @@ def gen_algo(popul, gen_max, nb_best, pm) :
     # Measure starting time
     start = perf_counter()
     
+    # --- EVALUATION ---
+    eval_pop(popul, epochs)
+
     for gen in range(0, gen_max) :
-        
-        # --- EVALUATION ---
-        eval_pop(popul)
-        
+       
+        print("Generation {}".format(gen + 1))
+
         # --- SELECTION --- 
         pop_next = selection(popul, nb_best)   
         
@@ -403,6 +422,9 @@ def gen_algo(popul, gen_max, nb_best, pm) :
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
         
+        # --- EVALUATION ---
+        eval_pop(popul, epochs)
+
         # Extract the current Pareto frontier and update the Pareto frontiers
         pareto_frontiers.append(pareto_front(popul)) 
     # end for gen
@@ -473,7 +495,7 @@ def local_search(popul, radius, nb_neighb) :
             if visited_neighb == nb_neighb :
                 break
             
-            # If candidate is in the quarter circle that defines a better model than popul.pop[i]
+            # If candidate is in the quarter square that defines a better model than popul.pop[i]
             if (popul.pop[i].inaccuracy - radius <= candidate.inaccuracy) and (candidate.inaccuracy < popul.pop[i].inaccuracy) \
             and (popul.pop[i].time - radius <= candidate.time) and (candidate.time < popul.pop[i].time) :
             
@@ -497,11 +519,12 @@ def local_search(popul, radius, nb_neighb) :
 # end local_search()
  
     
-def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
+def mem_algo(popul, epochs, gen_max, nb_best, pm, radius, nb_neighb) :
     """
     \Description : Apply a memetic algorithm to a population
     \Args : 
         popul       : the population of individual to evolve
+        epochs      : number of epochs
         gen_max     : max number of generations
         nb_best     : number of best individuals to select for crossover 
         pm          : probability for an individual to mutate
@@ -514,12 +537,14 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     
     # Measure starting time
     start = perf_counter()
-    
+   
+    # --- EVALUATION ---
+    eval_pop(popul, epochs)
+
     for gen in range(0, gen_max) :
         
-        # --- EVALUATION ---
-        eval_pop(popul)
-        
+        print("Generation {}".format(gen + 1))
+
         # --- LOCAL SEARCH ---
         local_search(popul, radius, nb_neighb)
         
@@ -536,6 +561,9 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
         
+        # --- EVALUATION ---
+        eval_pop(popul, epochs)
+
         # Extract the current Pareto frontier and update the Pareto frontiers
         pareto_frontiers.append(pareto_front(popul)) 
     # end for gen
@@ -565,21 +593,4 @@ def mem_algo(popul, gen_max, nb_best, pm, radius, nb_neighb) :
     for model in pareto_frontiers[len(pareto_frontiers) - 1] :
         model.printCNN(standard_out="file", filename=filename)
     
-# end gen_algo()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-                    
+# end mem_algo()  

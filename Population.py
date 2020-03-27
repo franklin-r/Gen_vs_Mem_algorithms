@@ -62,7 +62,7 @@ class Population() :
         self.lr_set = lr_set
         self.mom_set = mom_set
         
-        self.pop = indiv_list                       # List of the individuals in the population
+        self.pop = indiv_list[:]                    # List of the individuals in the population
         self.train_loader = train_loader            # Train loader
         self.test_loader = test_loader              # Test loader
         self.train_batch_size = train_batch_size    # Size of the training batch

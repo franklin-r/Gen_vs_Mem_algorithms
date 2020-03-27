@@ -28,14 +28,27 @@ def shape_pareto_front(pareto_frontiers) :
     for i in range(0, len(pareto_frontiers)) :
         for model in pareto_frontiers[i] :
             # Save the data of the current model in the Pareto frontier
-            shaped_data.append(
-                    [i + 1, 
-                     model.inaccuracy.item(), 
-                     model.time, 
-                     model.chromosome["NL"], 
-                     model.feat_maps_seq, 
-                     model.chromosome["lr"], 
-                     model.chromosome["mom"]])
+            if type(model.inaccuracy).__name__ == "float" :
+                shaped_data.append(
+                        [i + 1,
+                        model.inaccuracy,
+                        model.time,
+                        model.chromosome["NL"],
+                        model.feat_maps_seq,
+                        model.chromosome["lr"],
+                        model.chromosome["mom"]])
+
+            # If model.inaccuracy is a tensor (case of grid search)
+            else :
+                shaped_data.append(
+                        [i + 1, 
+                        model.inaccuracy.item(), 
+                        model.time, 
+                        model.chromosome["NL"],
+                        model.feat_maps_seq, 
+                        model.chromosome["lr"], 
+                        model.chromosome["mom"]])
+            # end if
         # end for model
     # end for it
     

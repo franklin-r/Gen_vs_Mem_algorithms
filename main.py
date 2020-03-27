@@ -29,7 +29,7 @@ if __name__ == "__main__" :
     lr_set = [0.1, 0.01]
     mom_set = [0.7, 0.75]
     
-    '''
+    ''' 
     # ------------------------ GRID SEARCH SCENARIO ------------------------ #
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 
@@ -43,10 +43,10 @@ if __name__ == "__main__" :
     curr_pop.load_data(train_batch_size=64, test_batch_size=1000)
     
     # Grid search
-    opt.grid_search(curr_pop)
+    opt.grid_search(curr_pop, epochs=1)
     '''
     
-    
+     
     # --------------------- GENETIC ALGORITHM SCENARIO --------------------- #
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 
@@ -60,7 +60,7 @@ if __name__ == "__main__" :
     curr_pop.load_data(train_batch_size=64, test_batch_size=1000)
     
     # Genetic algorithm
-    opt.gen_algo(popul=curr_pop, gen_max=10, nb_best=2, pm=0.25)
+    opt.gen_algo(popul=curr_pop, epochs=1, gen_max=2, nb_best=2, pm=0.25)
     
     '''
     # --------------------- MEMETIC ALGORITHM SCENARIO --------------------- #
@@ -76,7 +76,7 @@ if __name__ == "__main__" :
     curr_pop.load_data(train_batch_size=64, test_batch_size=1000)
     
     # Genetic algorithm
-    opt.mem_algo(popul=curr_pop, gen_max=10, nb_best=2, pm=0.25)
+    opt.mem_algo(popul=curr_pop, epochs=1, gen_max=3, nb_best=2, pm=0.25)
     
     
     '''
