@@ -46,11 +46,11 @@ if __name__ == "__main__" :
     opt.grid_search(curr_pop, epochs=1)
     '''
     
-     
+    '''
     # --------------------- GENETIC ALGORITHM SCENARIO --------------------- #
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 
-                              size=12, 
+                              size=9, 
                               NL_set=NL_set, 
                               NF_set=NF_set, 
                               lr_set=lr_set, 
@@ -60,13 +60,13 @@ if __name__ == "__main__" :
     curr_pop.load_data(train_batch_size=64, test_batch_size=1000)
     
     # Genetic algorithm
-    opt.gen_algo(popul=curr_pop, epochs=1, gen_max=2, nb_best=2, pm=0.25)
+    opt.gen_algo(popul=curr_pop, epochs=1, gen_max=2, nb_best=4, pm=0.25)
     
     '''
     # --------------------- MEMETIC ALGORITHM SCENARIO --------------------- #
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 
-                              size=12, 
+                              size=9, 
                               NL_set=NL_set, 
                               NF_set=NF_set, 
                               lr_set=lr_set, 
@@ -76,17 +76,17 @@ if __name__ == "__main__" :
     curr_pop.load_data(train_batch_size=64, test_batch_size=1000)
     
     # Genetic algorithm
-    opt.mem_algo(popul=curr_pop, epochs=1, gen_max=3, nb_best=2, pm=0.25)
+    opt.mem_algo(popul=curr_pop, epochs=1, gen_max=2, nb_best=4, pm=0.25, radius=0.5, nb_neighb=3)
     
     
-    '''
+    
     '''
     # Create a population
     curr_pop = Pop.Population(dataset="CIFAR10", 
                               size=0, 
                               NL_set=NL_set, 
                               NF_set=NF_set, 
-                              lr_set=lr_set, 
+                              lr_set=lr_set,
                               mom_set=mom_set)
     
     # Print population's info
@@ -134,21 +134,4 @@ if __name__ == "__main__" :
                              train_batch_size=curr_pop.train_batch_size,
                              test_batch_size=curr_pop.test_batch_size)
     '''   
-    
-      
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+# end main 

@@ -33,14 +33,18 @@ def pop_next_iter(popul, model) :
     # Iterate through the whole population
     for i in range(0, len(popul.pop)) :
         # If model is dominated by another one
-        if model.inaccuracy > popul.pop[i].inaccuracy and model.time > popul.pop[i].time :
+        if model.inaccuracy > popul.pop[i].inaccuracy and model.time > popul.pop[i].time \
+        or model.inaccuracy >= popul.pop[i].inaccuracy and model.time > popul.pop[i].time \
+        or model.inaccuracy > popul.pop[i].inaccuracy and model.time >= popul.pop[i].time :
             # We add the rest of the population but not model
             add = False
             new_pop.extend(popul.pop[i:])
             break                               # We stop for this model
         
         # If model dominates another one
-        elif model.inaccuracy < popul.pop[i].inaccuracy and model.time < popul.pop[i].time :
+        elif model.inaccuracy < popul.pop[i].inaccuracy and model.time < popul.pop[i].time \
+        or   model.inaccuracy <= popul.pop[i].inaccuracy and model.time < popul.pop[i].time \
+        or   model.inaccuracy < popul.pop[i].inaccuracy and model.time <= popul.pop[i].time :
             # We add model but popul.pop[i]
             add = True
             
@@ -189,17 +193,18 @@ def selection(popul, nb_best) :
     \Description : Select the best individuals of a population as well as random individuals from the rest of the population
     \Args : 
         popul   : the population of individual to evolve
-        nb_best : number of best individuals to select (must be even to ensure that ((popul.size // 2) - nb_best) 
-                    is a multiple of 4)
+        nb_best : number of best individuals to select
     \Outputs : 
         pop_next : The population of next generation
     """
     # Select the nb_best best individuals
     selected_indiv = popul.pop[0:nb_best]
-    
+   
+    # Select 2/3 of the population so that the the last 1/3 is from the crossover
+    nb_rand_indiv = (popul.size - len(selected_indiv)) - (popul.size // 3)
+
     # Select random individuals from the rest of the population
-    # The population must be half full in order to have room for the children
-    selected_indiv.extend(sample(popul.pop[nb_best:], (popul.size // 2) - len(selected_indiv)))
+    selected_indiv.extend(sample(popul.pop[nb_best:], nb_rand_indiv))
     
     # Create the corresponding population
     pop_next = Pop.Population(dataset=popul.dataset, 
@@ -248,10 +253,10 @@ def crossover(pop_next) :
         
         child1_gene = [couple[0].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
                          [couple[1].chromosome.get(val) for val in genes[genes.index(cut_gene):]]
-        
+        '''        
         child2_gene = [couple[1].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
                         [couple[0].chromosome.get(val) for val in genes[genes.index(cut_gene):]]   
-
+        '''
         # Create the child from the new genes
         if torch.cuda.is_available() :
             children.append(CNN.CNN(dataset=pop_next.dataset, 
@@ -259,25 +264,26 @@ def crossover(pop_next) :
                                     NF=child1_gene[1], 
                                     lr=child1_gene[2], 
                                     mom=child1_gene[3]).cuda())
-
+            '''
             children.append(CNN.CNN(dataset=pop_next.dataset,
                                     NL=child2_gene[0],
                                     NF=child2_gene[1],
                                     lr=child2_gene[2],
                                     mom=child2_gene[3]).cuda())
-            
+            '''
         else :
             children.append(CNN.CNN(dataset=pop_next.dataset, 
                                     NL=child1_gene[0],            
                                     NF=child1_gene[1], 
                                     lr=child1_gene[2], 
                                     mom=child1_gene[3]))
-
+            '''
             children.append(CNN.CNN(dataset=pop_next.dataset,
                                     NL=child2_gene[0],
                                     NF=child2_gene[1],
                                     lr=child2_gene[2],
                                     mom=child2_gene[3]))
+            '''
     # end for couple
     
     # Create the corresponding population
@@ -337,48 +343,81 @@ def pareto_front(popul) :
         pareto_front : the list of individuals of the Pareto frontier
     """
     # Initialize the Pareto frontier with the first individual
-    pareto_front = [popul.pop[0]] 
-
-    # Temporary Pareto frontier
-    pareto_front_tmp = pareto_front[:]    
-    
-                 
+    pareto_front = [popul.pop[0]]     
         
     # Iterate through the whole population
     for i in range(1, len(popul.pop)) :    # Start at index 1 because indiv at index 0 is already in the Pareto frontier
         # Boolean indicating whether or not to add an individual in the Pareto frontier
-        add = True 
+        add = True
+
+        '''
+        # Reset the temporary Pareto frontier
+        pareto_front_tmp = []
     
         # Iterate through the whole Pareto frontier
         for j in range(0, len(pareto_front)) :
             # If popul.pop[i] is dominated by a Pareto optimal individual
-            if popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time :
+            if popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time \
+            or popul.pop[i].inaccuracy >= pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time \
+            or popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time >=  pareto_front[j].time :
                 # We add the rest of the Pareto frontier but not popul.pop[i]
                 add = False
                 pareto_front_tmp.extend(pareto_front[j:])
                 break                               # We stop for this model
             
             # If popul.pop[i] dominates a Pareto optimal individual
-            elif popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time :
-                # We had popul.pop[i] but not pareto_front[j]
+            elif (popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time) \
+            or   (popul.pop[i].inaccuracy <= pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time) \
+            or   (popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time <= pareto_front[j].time) :
+                # We add popul.pop[i] but not pareto_front[j]
                 add = True
             
             # Any other case, i.e. :
             # popul.pop[i].inaccuracy == pareto_front[j].inaccuracy and popul.pop[i].time == pareto_front[j].time
-            # popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time
-            # popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time
+            # popul.pop[i].inaccuracy >= pareto_front[j].inaccuracy and popul.pop[i].time <= pareto_front[j].time
+            # popul.pop[i].inaccuracy <= pareto_front[j].inaccuracy and popul.pop[i].time >= pareto_front[j].time
             # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
             else :
                 add = True
                 pareto_front_tmp.append(pareto_front[j])
             # end if
         # end for j
+        '''
+
+        # Iterate through the whole Pareto frontier
+        j = 0
+        while j < len(pareto_front) :
+            # If popul.pop[i] is dominated by a Pareto optimal individual
+            if ((popul.pop[i].inaccuracy >= pareto_front[j].inaccuracy) and (popul.pop[i].time > pareto_front[j].time)) \
+            or ((popul.pop[i].inaccuracy > pareto_front[j].inaccuracy) and (popul.pop[i].time >=  pareto_front[j].time)) :
+                # We do not add popul.pop[i]
+                add = False
+                break           # We stop for this model
+            
+            # If popul.pop[i] dominates a Pareto optimal individual
+            elif ((popul.pop[i].inaccuracy <= pareto_front[j].inaccuracy) and (popul.pop[i].time < pareto_front[j].time)) \
+            or   ((popul.pop[i].inaccuracy < pareto_front[j].inaccuracy) and (popul.pop[i].time <= pareto_front[j].time)) :
+                # We add popul.pop[i] but remove pareto_front[j]
+                add = True
+                pareto_front.pop(j)
+                j -= 1          # If we do not decrement j, it skips the individual that were after the one removed
+            
+            # Any other case, i.e. :
+            # popul.pop[i].inaccuracy == pareto_front[j].inaccuracy and popul.pop[i].time == pareto_front[j].time
+            # popul.pop[i].inaccuracy >= pareto_front[j].inaccuracy and popul.pop[i].time <= pareto_front[j].time
+            # popul.pop[i].inaccuracy <= pareto_front[j].inaccuracy and popul.pop[i].time >= pareto_front[j].time
+            # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
+            else :
+                add = True
+            # end if
+
+            j += 1
+        # end while
         
         if add == True :
-            pareto_front_tmp.append(popul.pop[i])
-            
-        # Update the population for the next iteration
-        pareto_front = pareto_front_tmp[:]
+            pareto_front.append(popul.pop[i])
+        # end if
+        
     # end for i
     
     return pareto_front
@@ -408,7 +447,7 @@ def gen_algo(popul, epochs,  gen_max, nb_best, pm) :
     for gen in range(0, gen_max) :
        
         print("Generation {}".format(gen + 1))
-
+        
         # --- SELECTION --- 
         pop_next = selection(popul, nb_best)   
         
@@ -427,6 +466,7 @@ def gen_algo(popul, epochs,  gen_max, nb_best, pm) :
 
         # Extract the current Pareto frontier and update the Pareto frontiers
         pareto_frontiers.append(pareto_front(popul)) 
+        
     # end for gen
     
     # Measure ending time
@@ -516,6 +556,10 @@ def local_search(popul, radius, nb_neighb) :
     
     # Update the population
     popul.pop = new_pop[:]
+
+    # Update the size of popul.pop
+    popul.size = len(popul.pop)
+
 # end local_search()
  
     
@@ -545,25 +589,39 @@ def mem_algo(popul, epochs, gen_max, nb_best, pm, radius, nb_neighb) :
         
         print("Generation {}".format(gen + 1))
 
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         # --- LOCAL SEARCH ---
         local_search(popul, radius, nb_neighb)
         
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         # --- SELECTION --- 
         pop_next = selection(popul, nb_best)   
+
+        print("pop_next.size = {}\tlen(pop_next.pop) = {}".format(pop_next.size, len(pop_next.pop)))
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         
         # --- CROSSOVER ---
         pop_child = crossover(pop_next)
+
+        print("pop_child.size = {}\tlen(pop_child.pop) = {}".format(pop_child.size, len(pop_child.pop)))
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         
         # --- MUTATION ---
         mutation(pop_child, pm)
         
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
+
+        print("pop_next.size = {}\tlen(pop_next.pop) = {}".format(pop_next.size, len(pop_next.pop)))
+        print("pop_child.size = {}\tlen(pop_child.pop) = {}".format(pop_child.size, len(pop_child.pop)))
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         
         # --- EVALUATION ---
         eval_pop(popul, epochs)
 
+        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         # Extract the current Pareto frontier and update the Pareto frontiers
         pareto_frontiers.append(pareto_front(popul)) 
     # end for gen
@@ -587,7 +645,7 @@ def mem_algo(popul, epochs, gen_max, nb_best, pm, radius, nb_neighb) :
     ut.write_data_to_csv(filename, header, shaped_data)
     
     # Name of the file is the date and time
-    filename = datetime.now().strftime("./results/mem_algo/%d-%m-%Y_%Hh%M/txt")
+    filename = datetime.now().strftime("./results/mem_algo/%d-%m-%Y_%Hh%M.txt")
 
     # Save the best models' caracteristics
     for model in pareto_frontiers[len(pareto_frontiers) - 1] :

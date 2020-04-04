@@ -1,0 +1,86 @@
+Number of hidden layers : 5
+Feature maps : [128, 256, 512]
+Learning rate : 0.01
+Momentum : 0.7
+Architecture :
+Conv2d
+	in_channels = 3
+	out_channels = 128
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 128
+	out_channels = 128
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 128
+	out_channels = 128
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 128
+	out_channels = 128
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+AvgPool2d
+	kernel_size = 2
+	stride = 1
+Linear
+	in_features = 61952
+	out_features = 10
+
+Number of hidden layers : 5
+Feature maps : [64, 128, 256, 512]
+Learning rate : 0.01
+Momentum : 0.7
+Architecture :
+Conv2d
+	in_channels = 3
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+AvgPool2d
+	kernel_size = 2
+	stride = 1
+Linear
+	in_features = 30976
+	out_features = 10
+

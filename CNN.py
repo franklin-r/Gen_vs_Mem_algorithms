@@ -344,8 +344,7 @@ class CNN(nn.Module) :
         \Args : 
             epoch : number of epochs
             test_loader : loader of the test batch
-        \Output : 
-            Accuracy of the model
+        \Output : None
         """
         # State that you are testing the model
         self.eval()
@@ -356,6 +355,9 @@ class CNN(nn.Module) :
     
         # Define loss function
         loss_func = torch.nn.CrossEntropyLoss(reduction="sum")
+        
+        # Measure starting time
+        start = perf_counter()
     
         # Iterate over data
         for data, target in test_loader:
@@ -380,16 +382,21 @@ class CNN(nn.Module) :
             # If correct, increment correct prediction accumulator
             correct = correct + torch.eq(pred, target.data).sum()
         # end for
+
+        # Measure ending time
+        end = perf_counter()
     
         test_loss /= len(test_loader.dataset)
         self.inaccuracy = 100 - (100. * correct / len(test_loader.dataset))     # Inaccuracy of the model
-        
+        self.time += (end - start)                                              # Inference time of the model
+
         # Print log
-        print('\nTest set, Epoch {} , Average loss: {:.4f}, Inaccuracy: {}/{} ({:.2f}%)\n'.format(epoch,
+        print('\nTest set, Epoch {} , Average loss: {:.4f}, Inaccuracy: {}/{} ({:.2f}%) in {:.2f}s\n'.format(epoch,
               test_loss, 
               len(test_loader.dataset) - correct, 
               len(test_loader.dataset),
-              self.inaccuracy))   
+              self.inaccuracy,
+              (end - start)))   
     # end test_model()
 
 
@@ -414,9 +421,6 @@ class CNN(nn.Module) :
         # Evaluation of the individual
         log_interval = 100
         
-        # Measure starting time
-        start = perf_counter()
-        
         for epoch in range(1, epochs + 1) :
             # Training phase
             self.train_model(optimizer, epoch, train_loader, log_interval=log_interval)
@@ -424,16 +428,6 @@ class CNN(nn.Module) :
             # Testing phase
             self.test_model(epoch, test_loader)
         # end for epoch
-        
-        # Measure ending time
-        end = perf_counter()
-        
-        # Time elapsed for the whole procedure
-        self.time = end - start
-        
-        # Print results
-        print("RESULTS : {:.2f}% inaccuracy in {:.2f}s".format(self.inaccuracy, self.time))
-        
     # end evaluate_model()
     
 # end class CNN
