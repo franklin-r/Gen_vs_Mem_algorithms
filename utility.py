@@ -12,7 +12,6 @@ Created on Tue Mar 17 18:56:39 2020
 
 import csv
 
-# TO DO
 def shape_pareto_front(pareto_frontiers) :
     """
     \Description: Shape the pareto front to save it in a .csv file

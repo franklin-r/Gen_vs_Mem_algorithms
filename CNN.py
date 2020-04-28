@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
-from random import choice, randint
+from random import seed, choice, randint
 from time import perf_counter
 
 
@@ -51,15 +51,18 @@ class CNN(nn.Module) :
             (7) For each layer the same kernel size and stride size is used
             (8) Each convolutional layer is followed by batch normalization and rectifier function (ReLU)
             "
+            Here, the feature map of size 512 is replaced by a feature map of size 16  
         \Args : 
             dataset : the dataset used for the CNN
-            NL : number of hidden layers
-            NF : number of feature maps  
-            lr  : learning rate
-            mom : momentum
+            NL      : number of hidden layers
+            NF      : number of feature maps  
+            lr      : learning rate
+            mom     : momentum
         \Outputs : None
         """
         
+        seed(987)           # Set the random seed
+
         super(CNN, self).__init__()
         
         self.dataset    = dataset                                               # Dataset used
@@ -80,8 +83,8 @@ class CNN(nn.Module) :
             
          
         
-        # Determine the feature maps subsequence from {32, 64, 128, 256, 512}
-        self.feat_maps_seq = [32, 64, 128, 256, 512]
+        # Determine the feature maps subsequence from {16, 32, 64, 128, 256}
+        self.feat_maps_seq = [16, 32, 64, 128, 256]
         start = randint(0, len(self.feat_maps_seq) - self.chromosome["NF"])
         end = start + NF
         self.feat_maps_seq = self.feat_maps_seq[start : end]
@@ -374,35 +377,35 @@ class CNN(nn.Module) :
             output = self(data)
     
             # Calculate & accumulate loss
-            test_loss += loss_func(output, target).data
+            test_loss += float(loss_func(output, target).data)
     
             # Get the index of the max log-probability (the predicted output label)
             pred = torch.argmax(output.data, dim=1)
     
             # If correct, increment correct prediction accumulator
-            correct = correct + torch.eq(pred, target.data).sum()
+            correct += float(torch.eq(pred, target.data).sum())
         # end for
 
         # Measure ending time
         end = perf_counter()
     
         test_loss /= len(test_loader.dataset)
-        self.inaccuracy = 100 - (100. * correct / len(test_loader.dataset))     # Inaccuracy of the model
-        self.time += (end - start)                                              # Inference time of the model
+        self.inaccuracy = (100 - (100.0 * correct / len(test_loader.dataset))) / 100.0  # Inaccuracy of the model
+        self.time = (self.time * (epoch - 1) + (end - start)) / epoch                   # Make an average of the inference time of the model
 
         # Print log
         print('\nTest set, Epoch {} , Average loss: {:.4f}, Inaccuracy: {}/{} ({:.2f}%) in {:.2f}s\n'.format(epoch,
               test_loss, 
               len(test_loader.dataset) - correct, 
               len(test_loader.dataset),
-              self.inaccuracy,
+              self.inaccuracy * 100.0,
               (end - start)))   
     # end test_model()
 
 
     # Function to evaluate the model
     # Inspired from : https://www.kaggle.com/vincentman0403/pytorch-v0-3-1b-on-mnist-by-lenet (consulted on 07/03/2020)
-    def evaluate_model(self, train_loader, test_loader, epochs=10, train_batch_size=64, test_batch_size=1000) :
+    def evaluate_model(self, train_loader, test_loader, epochs=10, train_batch_size=64, test_batch_size=512) :
         """
         \Description : Evaluate the model
         \Args : 
@@ -430,22 +433,4 @@ class CNN(nn.Module) :
         # end for epoch
     # end evaluate_model()
     
-# end class CNN
-        
-        
-        
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+# end class CNN 

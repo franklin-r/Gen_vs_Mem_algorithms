@@ -13,7 +13,7 @@ Created on Sun Mar  8 19:13:31 2020
 import CNN
 import torch
 from torchvision import datasets, transforms
-from random import choice
+from random import seed, choice
 
 
 
@@ -53,6 +53,8 @@ class Population() :
         \Outputs : None
         """
         
+        seed(654)                   # Set the random seed
+
         self.dataset = dataset      # Dataset
         self.size = size            # Size of the population
         
@@ -112,7 +114,7 @@ class Population() :
     
     # Function to load the datasets 
     # Inspired from : https://www.kaggle.com/vincentman0403/pytorch-v0-3-1b-on-mnist-by-lenet (consulted on 07/03/2020)
-    def load_data(self, train_batch_size=64, test_batch_size=1000) :
+    def load_data(self, train_batch_size=64, test_batch_size=512) :
         """
         \Description : Load the dataset
         \Args : 
@@ -122,7 +124,7 @@ class Population() :
             train_loader : loader of the train batch
             test_loader : loader of the test batch
         """
-        
+       
         self.train_batch_size = train_batch_size
         self.test_batch_size = test_batch_size
         
@@ -170,19 +172,4 @@ class Population() :
         else :
             raise ValueError("Invalid dataset name. Either choose 'MNIST' or 'CIFAR10'")
 
-# end class Population        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+# end class Population 

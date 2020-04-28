@@ -1,24 +1,105 @@
-Number of hidden layers : 5
-Feature maps : [32, 64, 128]
+Bon candidat pour interprétation
+
+Condition d'arrêt : nombre de génération
+
+Number of hidden layers : 8
+Feature maps : [16, 32, 64, 128, 256]
+Learning rate : 0.01
+Momentum : 0.8
+Architecture :
+Conv2d
+	in_channels = 3
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 32
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+AvgPool2d
+	kernel_size = 2
+	stride = 1
+Linear
+	in_features = 9248
+	out_features = 10
+
+Number of hidden layers : 8
+Feature maps : [16, 32, 64, 128, 256]
 Learning rate : 0.01
 Momentum : 0.75
 Architecture :
 Conv2d
 	in_channels = 3
-	out_channels = 32
+	out_channels = 16
 	kernel_size = (3, 3)
 	stride = (1, 1)
 BatchNorm2d
 ReLU
 Conv2d
-	in_channels = 32
-	out_channels = 32
+	in_channels = 16
+	out_channels = 16
 	kernel_size = (3, 3)
 	stride = (1, 1)
 BatchNorm2d
 ReLU
 Conv2d
-	in_channels = 32
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
 	out_channels = 32
 	kernel_size = (3, 3)
 	stride = (1, 1)
@@ -38,16 +119,47 @@ AvgPool2d
 	kernel_size = 2
 	stride = 1
 Linear
-	in_features = 15488
+	in_features = 9248
 	out_features = 10
 
-Number of hidden layers : 4
-Feature maps : [32, 64, 128, 256]
-Learning rate : 0.1
-Momentum : 0.7
+Number of hidden layers : 11
+Feature maps : [16, 32, 64, 128, 256]
+Learning rate : 0.001
+Momentum : 0.9
 Architecture :
 Conv2d
 	in_channels = 3
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
 	out_channels = 32
 	kernel_size = (3, 3)
 	stride = (1, 1)
@@ -60,13 +172,6 @@ Conv2d
 	stride = (1, 1)
 BatchNorm2d
 ReLU
-Conv2d
-	in_channels = 32
-	out_channels = 32
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
 MaxPool2d
 	kernel_size = 2
 	stride = 1
@@ -74,78 +179,6 @@ AvgPool2d
 	kernel_size = 2
 	stride = 1
 Linear
-	in_features = 18432
-	out_features = 10
-
-Number of hidden layers : 4
-Feature maps : [128, 256, 512]
-Learning rate : 0.01
-Momentum : 0.75
-Architecture :
-Conv2d
-	in_channels = 3
-	out_channels = 128
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-Conv2d
-	in_channels = 128
-	out_channels = 128
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-Conv2d
-	in_channels = 128
-	out_channels = 128
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-MaxPool2d
-	kernel_size = 2
-	stride = 1
-AvgPool2d
-	kernel_size = 2
-	stride = 1
-Linear
-	in_features = 73728
-	out_features = 10
-
-Number of hidden layers : 4
-Feature maps : [64, 128, 256]
-Learning rate : 0.01
-Momentum : 0.75
-Architecture :
-Conv2d
-	in_channels = 3
-	out_channels = 64
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-Conv2d
-	in_channels = 64
-	out_channels = 64
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-Conv2d
-	in_channels = 64
-	out_channels = 64
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-MaxPool2d
-	kernel_size = 2
-	stride = 1
-AvgPool2d
-	kernel_size = 2
-	stride = 1
-Linear
-	in_features = 36864
+	in_features = 9248
 	out_features = 10
 

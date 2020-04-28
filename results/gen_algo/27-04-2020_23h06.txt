@@ -1,0 +1,156 @@
+Condition d'arrêt : gen_max = 15	inaccuracy = 0.65	time = 1.75
+
+Number of hidden layers : 11
+Feature maps : [16, 32, 64, 128]
+Learning rate : 0.01
+Momentum : 0.9
+Architecture :
+Conv2d
+	in_channels = 3
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 32
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 32
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+AvgPool2d
+	kernel_size = 2
+	stride = 1
+Linear
+	in_features = 9216
+	out_features = 10
+
+Number of hidden layers : 11
+Feature maps : [16, 32, 64, 128]
+Learning rate : 0.1
+Momentum : 0.75
+Architecture :
+Conv2d
+	in_channels = 3
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 32
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 32
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 64
+	out_channels = 64
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+AvgPool2d
+	kernel_size = 2
+	stride = 1
+Linear
+	in_features = 9216
+	out_features = 10
+

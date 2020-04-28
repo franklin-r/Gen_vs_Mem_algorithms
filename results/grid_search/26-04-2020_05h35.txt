@@ -1,25 +1,51 @@
-Number of hidden layers : 4
-Feature maps : [128, 256, 512]
+Bon candidat pour interprétation
+
+Number of hidden layers : 8
+Feature maps : [16, 32, 64]
 Learning rate : 0.01
-Momentum : 0.7
+Momentum : 0.8
 Architecture :
 Conv2d
 	in_channels = 3
-	out_channels = 128
+	out_channels = 16
 	kernel_size = (3, 3)
 	stride = (1, 1)
 BatchNorm2d
 ReLU
 Conv2d
-	in_channels = 128
-	out_channels = 128
+	in_channels = 16
+	out_channels = 16
 	kernel_size = (3, 3)
 	stride = (1, 1)
 BatchNorm2d
 ReLU
 Conv2d
-	in_channels = 128
-	out_channels = 128
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
+	out_channels = 32
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 32
+	out_channels = 32
 	kernel_size = (3, 3)
 	stride = (1, 1)
 BatchNorm2d
@@ -31,23 +57,47 @@ AvgPool2d
 	kernel_size = 2
 	stride = 1
 Linear
-	in_features = 73728
+	in_features = 9248
 	out_features = 10
 
-Number of hidden layers : 4
-Feature maps : [32, 64, 128]
+Number of hidden layers : 8
+Feature maps : [16, 32, 64, 128, 256]
 Learning rate : 0.01
-Momentum : 0.7
+Momentum : 0.8
 Architecture :
 Conv2d
 	in_channels = 3
-	out_channels = 32
+	out_channels = 16
 	kernel_size = (3, 3)
 	stride = (1, 1)
 BatchNorm2d
 ReLU
 Conv2d
-	in_channels = 32
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+Conv2d
+	in_channels = 16
+	out_channels = 16
+	kernel_size = (3, 3)
+	stride = (1, 1)
+BatchNorm2d
+ReLU
+MaxPool2d
+	kernel_size = 2
+	stride = 1
+Conv2d
+	in_channels = 16
 	out_channels = 32
 	kernel_size = (3, 3)
 	stride = (1, 1)
@@ -67,42 +117,6 @@ AvgPool2d
 	kernel_size = 2
 	stride = 1
 Linear
-	in_features = 18432
-	out_features = 10
-
-Number of hidden layers : 4
-Feature maps : [32, 64, 128, 256]
-Learning rate : 0.01
-Momentum : 0.7
-Architecture :
-Conv2d
-	in_channels = 3
-	out_channels = 32
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-Conv2d
-	in_channels = 32
-	out_channels = 32
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-Conv2d
-	in_channels = 32
-	out_channels = 32
-	kernel_size = (3, 3)
-	stride = (1, 1)
-BatchNorm2d
-ReLU
-MaxPool2d
-	kernel_size = 2
-	stride = 1
-AvgPool2d
-	kernel_size = 2
-	stride = 1
-Linear
-	in_features = 18432
+	in_features = 9248
 	out_features = 10
 

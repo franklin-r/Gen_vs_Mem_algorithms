@@ -13,11 +13,11 @@ Created on Sun Mar  8 20:46:12 2020
 import torch
 import Population as Pop
 import CNN
-from random import sample, shuffle, random, choice
+from random import seed, sample, shuffle, random, choice
 from time import perf_counter
 from datetime import datetime
 import utility as ut
-
+from math import pow, sqrt
 
 def pop_next_iter(popul, model) :
     """
@@ -27,24 +27,25 @@ def pop_next_iter(popul, model) :
         model   : the model to test
     \Outputs : None
     """
+    
+    seed(321)               # Set the random seed
+
     new_pop = []            # List containing the models of the next iteration  
     add = True              # Boolean indicating whether or not to add model to the next iteration
     
     # Iterate through the whole population
     for i in range(0, len(popul.pop)) :
         # If model is dominated by another one
-        if model.inaccuracy > popul.pop[i].inaccuracy and model.time > popul.pop[i].time \
-        or model.inaccuracy >= popul.pop[i].inaccuracy and model.time > popul.pop[i].time \
-        or model.inaccuracy > popul.pop[i].inaccuracy and model.time >= popul.pop[i].time :
+        if ((model.inaccuracy >= popul.pop[i].inaccuracy) and (model.time > popul.pop[i].time)) \
+        or ((model.inaccuracy > popul.pop[i].inaccuracy) and (model.time >= popul.pop[i].time)) :
             # We add the rest of the population but not model
             add = False
             new_pop.extend(popul.pop[i:])
             break                               # We stop for this model
         
         # If model dominates another one
-        elif model.inaccuracy < popul.pop[i].inaccuracy and model.time < popul.pop[i].time \
-        or   model.inaccuracy <= popul.pop[i].inaccuracy and model.time < popul.pop[i].time \
-        or   model.inaccuracy < popul.pop[i].inaccuracy and model.time <= popul.pop[i].time :
+        elif ((model.inaccuracy <= popul.pop[i].inaccuracy) and (model.time < popul.pop[i].time)) \
+        or   ((model.inaccuracy < popul.pop[i].inaccuracy) and (model.time <= popul.pop[i].time)) :
             # We add model but popul.pop[i]
             add = True
             
@@ -105,13 +106,14 @@ def grid_search(popul, epochs) :
                                         NF=NF,
                                         lr=lr,
                                         mom=mom)
-                    
+                    # end if
+
                     # Evaluate the individual
                     model.evaluate_model(train_loader=popul.train_loader,
                                          test_loader=popul.test_loader, 
                                          epochs=epochs, 
                                          train_batch_size=64, 
-                                         test_batch_size=1000)
+                                         test_batch_size=512)
                     
                     # Check if the individual is optimal
                     pop_next_iter(popul, model)  
@@ -160,16 +162,19 @@ def eval_pop(popul, epochs) :
         epochs  : number of epochs
     \Outputs : None
     """
-    inaccuracies = []                       #List containing the inaccuracy attributes of each model
-    times = []                              #List containing the inaccuracy attributes of each model
+    inaccuracies = []                       # List containing the inaccuracy attributes of each model
+    times = []                              # List containing the inaccuracy attributes of each model
 
     # Evaluation of the current population
     for model in popul.pop :
-        model.evaluate_model(train_loader=popul.train_loader,
-                             test_loader=popul.test_loader, 
-                             epochs=epochs, 
-                             train_batch_size=64, 
-                             test_batch_size=1000)
+        if model.time == 0.0 :              # If the model has never been trained
+            model.evaluate_model(train_loader=popul.train_loader,
+                                test_loader=popul.test_loader, 
+                                epochs=epochs, 
+                                train_batch_size=64, 
+                                test_batch_size=512)
+        # end if
+
         inaccuracies.append(model.inaccuracy)       # Add the inaccuracy of each model to the list
         times.append(model.time)                    # Add the time of each model to the list
     # end for model
@@ -253,10 +258,7 @@ def crossover(pop_next) :
         
         child1_gene = [couple[0].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
                          [couple[1].chromosome.get(val) for val in genes[genes.index(cut_gene):]]
-        '''        
-        child2_gene = [couple[1].chromosome.get(val) for val in genes[:genes.index(cut_gene)]] + \
-                        [couple[0].chromosome.get(val) for val in genes[genes.index(cut_gene):]]   
-        '''
+        
         # Create the child from the new genes
         if torch.cuda.is_available() :
             children.append(CNN.CNN(dataset=pop_next.dataset, 
@@ -264,26 +266,13 @@ def crossover(pop_next) :
                                     NF=child1_gene[1], 
                                     lr=child1_gene[2], 
                                     mom=child1_gene[3]).cuda())
-            '''
-            children.append(CNN.CNN(dataset=pop_next.dataset,
-                                    NL=child2_gene[0],
-                                    NF=child2_gene[1],
-                                    lr=child2_gene[2],
-                                    mom=child2_gene[3]).cuda())
-            '''
         else :
             children.append(CNN.CNN(dataset=pop_next.dataset, 
                                     NL=child1_gene[0],            
                                     NF=child1_gene[1], 
                                     lr=child1_gene[2], 
                                     mom=child1_gene[3]))
-            '''
-            children.append(CNN.CNN(dataset=pop_next.dataset,
-                                    NL=child2_gene[0],
-                                    NF=child2_gene[1],
-                                    lr=child2_gene[2],
-                                    mom=child2_gene[3]))
-            '''
+        # end if
     # end for couple
     
     # Create the corresponding population
@@ -349,41 +338,7 @@ def pareto_front(popul) :
     for i in range(1, len(popul.pop)) :    # Start at index 1 because indiv at index 0 is already in the Pareto frontier
         # Boolean indicating whether or not to add an individual in the Pareto frontier
         add = True
-
-        '''
-        # Reset the temporary Pareto frontier
-        pareto_front_tmp = []
-    
-        # Iterate through the whole Pareto frontier
-        for j in range(0, len(pareto_front)) :
-            # If popul.pop[i] is dominated by a Pareto optimal individual
-            if popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time \
-            or popul.pop[i].inaccuracy >= pareto_front[j].inaccuracy and popul.pop[i].time > pareto_front[j].time \
-            or popul.pop[i].inaccuracy > pareto_front[j].inaccuracy and popul.pop[i].time >=  pareto_front[j].time :
-                # We add the rest of the Pareto frontier but not popul.pop[i]
-                add = False
-                pareto_front_tmp.extend(pareto_front[j:])
-                break                               # We stop for this model
-            
-            # If popul.pop[i] dominates a Pareto optimal individual
-            elif (popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time) \
-            or   (popul.pop[i].inaccuracy <= pareto_front[j].inaccuracy and popul.pop[i].time < pareto_front[j].time) \
-            or   (popul.pop[i].inaccuracy < pareto_front[j].inaccuracy and popul.pop[i].time <= pareto_front[j].time) :
-                # We add popul.pop[i] but not pareto_front[j]
-                add = True
-            
-            # Any other case, i.e. :
-            # popul.pop[i].inaccuracy == pareto_front[j].inaccuracy and popul.pop[i].time == pareto_front[j].time
-            # popul.pop[i].inaccuracy >= pareto_front[j].inaccuracy and popul.pop[i].time <= pareto_front[j].time
-            # popul.pop[i].inaccuracy <= pareto_front[j].inaccuracy and popul.pop[i].time >= pareto_front[j].time
-            # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
-            else :
-                add = True
-                pareto_front_tmp.append(pareto_front[j])
-            # end if
-        # end for j
-        '''
-
+       
         # Iterate through the whole Pareto frontier
         j = 0
         while j < len(pareto_front) :
@@ -409,7 +364,7 @@ def pareto_front(popul) :
             # falls in the case in which we add both popul.pop[i] and pareto_front[j] to the Pareto front
             else :
                 add = True
-            # end if
+                # end if
 
             j += 1
         # end while
@@ -422,32 +377,62 @@ def pareto_front(popul) :
     
     return pareto_front
 # end pareto_front()
-    
-  
-def gen_algo(popul, epochs,  gen_max, nb_best, pm) :
+
+
+def check_objectives(pareto_front, inaccuracy, time) : 
+    """
+    \Description : Check if the objectives are met
+    \Args :
+        pareto_front    : Pareto frontier
+        inaccuracy      : objective inaccuracy
+        time            : objective inference time
+    \Output : a boolean indicating whether or not the objectives are met
+    Note : None
+    """
+
+    for model in pareto_front :
+        if((model.inaccuracy <= inaccuracy) and (model.time <= time)) :
+            return True
+    # end for model
+
+    return False
+
+# end check_objectives()
+
+def gen_algo(popul, epochs, nb_best, pm, gen_max, inaccuracy=-1, time=-1) :
     """
     \Description : Apply a genetic algorithm to a population
     \Args : 
-        popul   : the population of individual to evolve
-        epochs  : number of epochs
-        gen_max : max number of generations
-        nb_best : number of best individuals to select for crossover 
-        pm      : probability for an individual to mutate
+        popul       : the population of individual to evolve
+        epochs      : number of epochs
+        nb_best     : number of best individuals to select for crossover 
+        pm          : probability for an individual to mutate
+        gen_max     : maximum number of generations
+        inaccuracy  : desired inaccuracy. A value of -1 indicates that we do not want an exact value as objective
+        time        : desired inference time. A value of -1 indicates that we do not want an exact value as objective
     \Outputs : None
+    Note : None
     """
     # Pareto front of each generation
     pareto_frontiers = []
     
     # Measure starting time
     start = perf_counter()
-    
-    # --- EVALUATION ---
-    eval_pop(popul, epochs)
-
+     
     for gen in range(0, gen_max) :
-       
+
         print("Generation {}".format(gen + 1))
         
+        # --- EVALUATION ---
+        eval_pop(popul, epochs)
+        
+        # Extract the current Pareto frontier and update the Pareto frontiers
+        pareto_frontiers.append(pareto_front(popul))
+        
+        # Check whether or not the objectives are met
+        if(check_objectives(pareto_frontiers[gen], inaccuracy, time)) :
+            break           # Exit the loop if the objectives are met
+
         # --- SELECTION --- 
         pop_next = selection(popul, nb_best)   
         
@@ -460,13 +445,7 @@ def gen_algo(popul, epochs,  gen_max, nb_best, pm) :
         # --- UPDATE OF THE CURRENT POPULATION ---  
         # The current population is the union of pop_next and pop_child's population
         popul.pop = pop_next.pop + pop_child.pop
-        
-        # --- EVALUATION ---
-        eval_pop(popul, epochs)
-
-        # Extract the current Pareto frontier and update the Pareto frontiers
-        pareto_frontiers.append(pareto_front(popul)) 
-        
+           
     # end for gen
     
     # Measure ending time
@@ -509,11 +488,11 @@ def local_search(popul, radius, nb_neighb) :
     Notes : 
         In the case we do not sort the individuals before the local search, we might start to perform local search on 
         "average" individual and replace them with fitter individuals. The probleme lays in the case where the former were in 
-        the radius of a optimizable individual.
+        the radius of an optimizable individual.
         After the local search on the "average" individual, it disappears from the radius 
         of an optimizable individual and therefore the latter cannot be optimized anymore.
         The current implementation does not take into account this and a future feature could be added to sort the individuals
-        into successive Pareto frontier beforehand if the density of the individuals is to high and such a feature could 
+        into successive Pareto frontier beforehand if the density of the individuals is too high and such a feature could 
         improve the results. Then we could perform the local search starting from the least fit Pareto frontier            
     """
     # New population after local search
@@ -535,13 +514,15 @@ def local_search(popul, radius, nb_neighb) :
             if visited_neighb == nb_neighb :
                 break
             
-            # If candidate is in the quarter square that defines a better model than popul.pop[i]
-            if (popul.pop[i].inaccuracy - radius <= candidate.inaccuracy) and (candidate.inaccuracy < popul.pop[i].inaccuracy) \
-            and (popul.pop[i].time - radius <= candidate.time) and (candidate.time < popul.pop[i].time) :
-            
+            # If candidate is in the quarter circle that defines a better model than popul.pop[i]    
+            if ((radius >= sqrt(pow(popul.pop[i].inaccuracy - candidate.inaccuracy, 2) + pow(popul.pop[i].time - candidate.time, 2))) \
+            and (((candidate.inaccuracy <= popul.pop[i].inaccuracy) and (candidate.time < popul.pop[i].time)) \
+            or  ((candidate.inaccuracy < popul.pop[i].inaccuracy) and (candidate.time <= popul.pop[i].time)))) :
             
                 # If candidate is fitter than the fittest of the neighbours
-                if (candidate.inaccuracy < fittest_model.inaccuracy) and (candidate.time < fittest_model.time) :
+                if (((candidate.inaccuracy <= fittest_model.inaccuracy) and (candidate.time < fittest_model.time)) \
+                or ((candidate.inaccuracy < fittest_model.inaccuracy) and (candidate.time <= fittest_model.time))) :
+ 
                     # Replace the fittest model
                     fittest_model = candidate
                 # end if
@@ -562,18 +543,20 @@ def local_search(popul, radius, nb_neighb) :
 
 # end local_search()
  
-    
-def mem_algo(popul, epochs, gen_max, nb_best, pm, radius, nb_neighb) :
+
+def mem_algo(popul, epochs, nb_best, pm, radius, nb_neighb, gen_max, inaccuracy=-1, time=-1) :
     """
     \Description : Apply a memetic algorithm to a population
     \Args : 
         popul       : the population of individual to evolve
         epochs      : number of epochs
-        gen_max     : max number of generations
         nb_best     : number of best individuals to select for crossover 
         pm          : probability for an individual to mutate
         radius      : the radius in which to search for the solution during the local search
         nb_neighb   : number of neighbours to test in the radius during the local search
+        gen_max     : maximum nulber if generations
+        inaccuracy  : desired inaccuracy. A value of -1 indicates that we do not want an exact value as objective
+        time        : desired inference time. A value of -1 indicates that we do not want an exact value as objective
     \Outputs : None
     """
     # Pareto front of each generation
@@ -581,49 +564,37 @@ def mem_algo(popul, epochs, gen_max, nb_best, pm, radius, nb_neighb) :
     
     # Measure starting time
     start = perf_counter()
-   
-    # --- EVALUATION ---
-    eval_pop(popul, epochs)
-
+    
     for gen in range(0, gen_max) :
         
         print("Generation {}".format(gen + 1))
-
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
-        # --- LOCAL SEARCH ---
-        local_search(popul, radius, nb_neighb)
-        
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
-        # --- SELECTION --- 
-        pop_next = selection(popul, nb_best)   
-
-        print("pop_next.size = {}\tlen(pop_next.pop) = {}".format(pop_next.size, len(pop_next.pop)))
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
-        
-        # --- CROSSOVER ---
-        pop_child = crossover(pop_next)
-
-        print("pop_child.size = {}\tlen(pop_child.pop) = {}".format(pop_child.size, len(pop_child.pop)))
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
-        
-        # --- MUTATION ---
-        mutation(pop_child, pm)
-        
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
-        # --- UPDATE OF THE CURRENT POPULATION ---  
-        # The current population is the union of pop_next and pop_child's population
-        popul.pop = pop_next.pop + pop_child.pop
-
-        print("pop_next.size = {}\tlen(pop_next.pop) = {}".format(pop_next.size, len(pop_next.pop)))
-        print("pop_child.size = {}\tlen(pop_child.pop) = {}".format(pop_child.size, len(pop_child.pop)))
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
         
         # --- EVALUATION ---
         eval_pop(popul, epochs)
 
-        print("popul.size = {}\tlen(popul.pop) = {}".format(popul.size, len(popul.pop)))
+        # --- LOCAL SEARCH ---
+        local_search(popul, radius, nb_neighb)
+        
         # Extract the current Pareto frontier and update the Pareto frontiers
-        pareto_frontiers.append(pareto_front(popul)) 
+        pareto_frontiers.append(pareto_front(popul))
+
+        # Check if the objectives are met
+        if(check_objectives(pareto_frontiers[gen], inaccuracy, time)) :
+            break           # Exit the loop if the objectives are met
+
+        # --- SELECTION --- 
+        pop_next = selection(popul, nb_best)   
+        
+        # --- CROSSOVER ---
+        pop_child = crossover(pop_next)
+
+        # --- MUTATION ---
+        mutation(pop_child, pm)
+        
+        # --- UPDATE OF THE CURRENT POPULATION ---  
+        # The current population is the union of pop_next and pop_child's population
+        popul.pop = pop_next.pop + pop_child.pop
+
     # end for gen
     
     # Measure ending time
